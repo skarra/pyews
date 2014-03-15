@@ -28,19 +28,59 @@ from   autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 USER = u'skarra@asynk.onmicrosoft.com'
 PWD  = u'tsYWpw8m'
 
+##
+## Note: There is a feeeble attemp to mimick the names of classes and methods
+## used in the EWS Managed Services API. However the similiarities are merely
+## skin-deep, if anything at all.
+##
+
 class InvalidUserEmail(Exception):
     pass
 
-class EWS:
+class WebCredentials:
     def __init__ (self, user, pwd):
         self.user = user
         self.pwd  = pwd
-        self.ews_ad = EWSAutoDiscover(user, pwd)
+
+class ExchangeService:
+    def __init__ (self):
+        self.ews_ad = None
+        self.credentials = None
+
+    def AutoDiscoverUrl (self):
+        """blame the weird naming on the EWS MS APi."""
+
+        creds = self.credentials
+        self.ews_ad = EWSAutoDiscover(creds.user, creds.pwd)
         self.ews_url = self.ews_ad.discover()
+
+    @property
+    def credentials (self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials (self, c):
+        self._credentials = c
+
+    @property
+    def ews_url (self):
+        return self._ews_url
+
+    @ews_url.setter
+    def ews_url (self, url):
+        self._ews_url = url
 
 def main ():
     logging.getLogger().setLevel(logging.DEBUG)
-    ews = EWS(USER, PWD)
+
+    creds = WebCredentials(USER, PWD)
+    ews = ExchangeService()
+    ews.credentials = creds
+
+    try:
+        ews.AutoDiscoverUrl()
+    except ExchangeAutoDiscoverError as e:
+        logging.error('ExchangeAutoDiscoverError: %s', e)
 
 if __name__ == "__main__":
     main()
