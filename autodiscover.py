@@ -47,6 +47,9 @@ class EWSAutoDiscover:
         In case there is a failure in performing the autodiscovery for any
         reason an exception ExchangeAutoDiscoverError is raised."""
 
+        ## FIXME: Till we implement something ...
+        raise ExchangeAutoDiscoverError('Not Implemented')
+
         self.url = ""
 
         ## Step 1 in Doc 1 above
@@ -70,8 +73,6 @@ class EWSAutoDiscover:
         # ep_req = self.pysren.render_path(utils.AUTODIS_EPS_REQUEST_FN,
         #                                  {'mailbox' : self.user})
         # print ep_req
-
-        # raise ExchangeAutoDiscoverError()
 
     def discover_through_scp (self):
         """Hard to test this as this requires the client to be on a computer
