@@ -1,0 +1,33 @@
+
+A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Originally developed for use with ASynK - http://karra-asynk.appspot.com/
+
+
+* Status
+
+** Sat Mar 15 17:17:01 IST 2014
+
+   Developing the autodiscovery service is going to be a very difficult
+   affair. There are many deployment scenaros possible as made clear in the
+   documentation and there's no way to validate the code in all the
+   scenarios. So for now the autodiscover code is incomplete and, well, a bit
+   shoddy. Sorry.
+
+* Links to important reference docs
+
+- http://msdn.microsoft.com/en-us/library/office/jj900168.aspx Start Using Web Services in Exchange
+
+* Time Tracker
+
+** Mar 2014
+   CLOCK: [2014-03-15 Sat 16:18]--[2014-03-15 Sat 17:16] =>  0:58
+   CLOCK: [2014-03-15 Sat 15:24]--[2014-03-15 Sat 15:26] =>  0:02
+   CLOCK: [2014-03-05 Wed 19:19]--[2014-03-05 Wed 19:39] =>  0:20
+   CLOCK: [2014-03-05 Wed 17:01]--[2014-03-05 Wed 17:43] =>  0:42
+   CLOCK: [2014-03-05 Wed 16:31]--[2014-03-05 Wed 16:51] =>  0:20
+   CLOCK: [2014-03-05 Wed 16:10]--[2014-03-05 Wed 16:30] =>  0:20
+   CLOCK: [2014-03-05 Wed 15:05]--[2014-03-05 Wed 16:00] =>  0:55
+   CLOCK: [2014-03-05 Wed 14:03]--[2014-03-05 Wed 14:23] =>  0:20
+   CLOCK: [2014-03-05 Wed 12:35]--[2014-03-05 Wed 13:03] =>  0:28
+   CLOCK: [2014-03-05 Wed 11:41]--[2014-03-05 Wed 12:01] =>  0:20
+   CLOCK: [2014-03-05 Wed 11:23]--[2014-03-05 Wed 11:30] =>  0:07
+
