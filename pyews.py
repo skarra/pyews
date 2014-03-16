@@ -25,8 +25,9 @@ from   autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 #from   httplib import HTTPException
 #from   ntlm    import HTTPNtlmAuthHandler
 
-USER = u'skarra@asynk.onmicrosoft.com'
-PWD  = u'tsYWpw8m'
+USER = u''
+PWD  = u''
+EWS_URL = u''
 
 ##
 ## Note: There is a feeeble attemp to mimick the names of classes and methods
@@ -52,7 +53,7 @@ class ExchangeService:
 
         creds = self.credentials
         self.ews_ad = EWSAutoDiscover(creds.user, creds.pwd)
-        self.ews_url = self.ews_ad.discover()
+        self.Url = self.ews_ad.discover()
 
     @property
     def credentials (self):
@@ -63,15 +64,24 @@ class ExchangeService:
         self._credentials = c
 
     @property
-    def ews_url (self):
-        return self._ews_url
+    def Url (self):
+        return self._Url
 
-    @ews_url.setter
-    def ews_url (self, url):
-        self._ews_url = url
+    @Url.setter
+    def Url (self, url):
+        self._Url = url
 
 def main ():
     logging.getLogger().setLevel(logging.DEBUG)
+
+    global USER, PWD, EWS_URL
+
+    with open('auth.txt', 'r') as inf:
+        USER    = inf.readline().strip()
+        PWD     = inf.readline().strip()
+        EWS_URL = inf.readline().strip()
+
+        logging.debug('Username: %s; Url: %s', USER, EWS_URL)
 
     creds = WebCredentials(USER, PWD)
     ews = ExchangeService()
@@ -80,7 +90,9 @@ def main ():
     try:
         ews.AutoDiscoverUrl()
     except ExchangeAutoDiscoverError as e:
-        logging.error('ExchangeAutoDiscoverError: %s', e)
+        logging.info('ExchangeAutoDiscoverError: %s', e)
+        logging.info('Falling back on manual url setting.')
+        ews.Url = EWS_URL
 
 if __name__ == "__main__":
     main()
