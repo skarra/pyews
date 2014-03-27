@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+   xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+
+  <soap:Body>
+    <GetFolder xmlns="http://schemas.microsoft.com/exchange/services/2006/messages"
+               xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+      <FolderShape>
+        <t:BaseShape>Default</t:BaseShape>
+      </FolderShape>
+
+      <FolderIds>
+          {{ folder_ids }}
+        <!-- <t:DistinguishedFolderId Id="inbox"/> -->
+      </FolderIds>
+
+    </GetFolder>
+  </soap:Body>
+</soap:Envelope>

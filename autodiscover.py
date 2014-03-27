@@ -35,7 +35,7 @@ class EWSAutoDiscover:
             raise InvalidUserEmail("Could not get domain from user email id")
         self.domain = res.group(2)
 
-        self.pysren = pystache.Renderer()
+        self.pysren = pystache.Renderer(file_extension="mustache")
 
     def discover (self):
         """Based on a username and password try to autodiscover the EWS
@@ -70,7 +70,7 @@ class EWSAutoDiscover:
         if ret:
             return ret
 
-        # ep_req = self.pysren.render_path(utils.AUTODIS_EPS_REQUEST_FN,
+        # ep_req = self.pysren.render_path(utils.REQ_AUTODIS_EPS,
         #                                  {'mailbox' : self.user})
         # print ep_req
 

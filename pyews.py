@@ -18,12 +18,13 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-import logging
+import logging, re
+
 import utils
 from   autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 
-#from   httplib import HTTPException
-#from   ntlm    import HTTPNtlmAuthHandler
+import pystache
+from   soap import SoapClient
 
 USER = u''
 PWD  = u''
@@ -38,15 +39,20 @@ EWS_URL = u''
 class InvalidUserEmail(Exception):
     pass
 
-class WebCredentials:
+class WebCredentials(object):
     def __init__ (self, user, pwd):
         self.user = user
         self.pwd  = pwd
 
-class ExchangeService:
+class ExchangeService(object):
     def __init__ (self):
         self.ews_ad = None
         self.credentials = None
+        self.pysren = pystache.Renderer(escape=lambda u: u)
+
+    ##
+    ## First the methods that are similar to the EWS MS API
+    ##
 
     def AutoDiscoverUrl (self):
         """blame the weird naming on the EWS MS APi."""
@@ -54,6 +60,35 @@ class ExchangeService:
         creds = self.credentials
         self.ews_ad = EWSAutoDiscover(creds.user, creds.pwd)
         self.Url = self.ews_ad.discover()
+
+    ##
+    ## Other external methods
+    ##
+
+    def init_soap_client (self):
+        self.soap = SoapClient(self.Url, user=self.credentials.user,
+                               pwd=self.credentials.pwd)
+
+    def get_distinguished_folder (self, name):
+        elem = u'<t:DistinguishedFolderId Id="%s"/>' % name
+        req  = self.pysren.render_path(utils.REQ_GET_FOLDER,
+                                       {'folder_ids' : elem})
+        print self.soap.send(req)
+
+    ##
+    ## Internal routines
+    ##
+
+    def _wsdl_url (self, url=None):
+        if not url:
+            url = self.Url
+
+        res = re.match('(.*)Exchange.asmx$', url)
+        return res.group(1) + 'Services.wsdl'
+
+    ##
+    ## Property getter/setter stuff
+    ##
 
     @property
     def credentials (self):
@@ -70,6 +105,7 @@ class ExchangeService:
     @Url.setter
     def Url (self, url):
         self._Url = url
+        self.wsdl_url = self._wsdl_url()
 
 def main ():
     logging.getLogger().setLevel(logging.DEBUG)
@@ -93,6 +129,9 @@ def main ():
         logging.info('ExchangeAutoDiscoverError: %s', e)
         logging.info('Falling back on manual url setting.')
         ews.Url = EWS_URL
+
+    ews.init_soap_client()
+    ews.get_distinguished_folder('inbox')
 
 if __name__ == "__main__":
     main()
