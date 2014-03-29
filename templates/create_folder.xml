@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-      xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
-  <soap:Body>
+{% extends "base_request.xml" %}
+
+{% block body %}
     <CreateFolder xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
       <ParentFolderId>
         <t:DistinguishedFolderId Id="msgfolderroot"/>
@@ -17,5 +16,4 @@
         </t:Folder>
       </Folders>
     </CreateFolder>
-  </soap:Body>
-</soap:Envelope>
+{% end %}
