@@ -21,7 +21,8 @@
 import logging, re
 
 import utils
-from   autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
+from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
+from   ews.data         import DistinguishedFolderId
 
 from   tornado import template
 from   soap import SoapClient
@@ -134,7 +135,7 @@ def main ():
         ews.Url = EWS_URL
 
     ews.init_soap_client()
-    ews.get_distinguished_folder('inbox')
+    ews.get_distinguished_folder(DistinguishedFolderId.inbox)
 
 if __name__ == "__main__":
     main()
