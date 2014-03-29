@@ -23,7 +23,7 @@ import logging, re
 import utils
 from   autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 
-import pystache
+from   tornado import template
 from   soap import SoapClient
 
 USER = u''
@@ -48,7 +48,7 @@ class ExchangeService(object):
     def __init__ (self):
         self.ews_ad = None
         self.credentials = None
-        self.pysren = pystache.Renderer(escape=lambda u: u)
+        self.loader = template.Loader(utils.REQUESTS_DIR)
 
     ##
     ## First the methods that are similar to the EWS MS API
@@ -71,8 +71,8 @@ class ExchangeService(object):
 
     def get_distinguished_folder (self, name):
         elem = u'<t:DistinguishedFolderId Id="%s"/>' % name
-        req  = self.pysren.render_path(utils.REQ_GET_FOLDER,
-                                       {'folder_ids' : elem})
+        req  = self._render_template(utils.REQ_GET_FOLDER,
+                                     folder_ids=elem)
         print self.soap.send(req)
 
     ##
@@ -85,6 +85,9 @@ class ExchangeService(object):
 
         res = re.match('(.*)Exchange.asmx$', url)
         return res.group(1) + 'Services.wsdl'
+
+    def _render_template (self, name, **kwargs):
+        return self.loader.load(name).generate(**kwargs)
 
     ##
     ## Property getter/setter stuff
