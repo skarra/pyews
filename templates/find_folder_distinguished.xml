@@ -1,0 +1,15 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <FindFolder Traversal="Shallow" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <FolderShape>
+        <t:BaseShape>AllProperties</t:BaseShape>
+      </FolderShape>
+      <ParentFolderIds>
+          {% for folder in folder_ids %}
+              <t:DistinguishedFolderId Id="{{ folder }}" />
+          {% end %}
+      </ParentFolderIds>
+    </FindFolder>
+
+{% end %}

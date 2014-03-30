@@ -1,0 +1,12 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:GetFolder>
+      <m:FolderShape>
+        <t:BaseShape>AllProperties</t:BaseShape>
+      </m:FolderShape>
+      <m:FolderIds>
+        <t:DistinguishedFolderId Id="{{ folder_name }}" />
+      </m:FolderIds>
+    </m:GetFolder>
+{% end %}

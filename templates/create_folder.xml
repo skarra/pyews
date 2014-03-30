@@ -3,17 +3,17 @@
 {% block body %}
     <CreateFolder xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
       <ParentFolderId>
-        <t:DistinguishedFolderId Id="msgfolderroot"/>
+        <t:DistinguishedFolderId Id="{{ parent_folder_id }}"/>
       </ParentFolderId>
+
       <Folders>
+        {% for name in names %}
         <t:Folder>
-        <t:DisplayName>
-        Folder1
-        </t:DisplayName>
+           <t:DisplayName>
+               {{ name }}
+           </t:DisplayName>
         </t:Folder>
-        <t:Folder>
-          <t:DisplayName>Folder2</t:DisplayName>
-        </t:Folder>
+	{% end %}
       </Folders>
     </CreateFolder>
 {% end %}

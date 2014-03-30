@@ -24,10 +24,9 @@
 
 ## perhaps this is not required?
 class WellKnownFolderName:
-    pass
+    MsgFolderRoot = 'msgfolderroot'
 
 class DistinguishedFolderId:
-
     """
     This list is largely taken from:
     http://msdn.microsoft.com/en-us/library/office/aa580808(v=exchg.150).aspx
@@ -56,3 +55,8 @@ class DistinguishedFolderId:
     directory = 'directory'
     imContactList = 'imcontactlist'
     peopleConnect = 'peopleconnect'
+
+class FolderClass:
+    Contacts = 'IPF.Contact'
+    Journals = 'IPF.Journal'
+    Notes = 'IPF.Note'

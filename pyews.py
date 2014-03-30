@@ -21,8 +21,11 @@
 import logging, re
 
 import utils
+from   utils            import pretty_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
-from   ews.data         import DistinguishedFolderId
+from   ews.data         import DistinguishedFolderId, WellKnownFolderName
+from   ews.data         import FolderClass
+from   folder import Folder
 
 from   tornado import template
 from   soap import SoapClient
@@ -70,11 +73,14 @@ class ExchangeService(object):
         self.soap = SoapClient(self.Url, user=self.credentials.user,
                                pwd=self.credentials.pwd)
 
+    def send (self, req):
+        return self.soap.send(req)
+
     def get_distinguished_folder (self, name):
         elem = u'<t:DistinguishedFolderId Id="%s"/>' % name
         req  = self._render_template(utils.REQ_GET_FOLDER,
                                      folder_ids=elem)
-        print self.soap.send(req)
+        return self.soap.send(req)
 
     ##
     ## Internal routines
@@ -135,7 +141,11 @@ def main ():
         ews.Url = EWS_URL
 
     ews.init_soap_client()
-    ews.get_distinguished_folder(DistinguishedFolderId.inbox)
+    root = Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)
+
+    contacts = root.fetch_all_folders(types=FolderClass.Contacts)
+    for f in contacts:
+        print 'DisplayName: %s; Id: %s' % (f.DisplayName, f.Id)
 
 if __name__ == "__main__":
     main()

@@ -27,6 +27,12 @@ A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Orig
 * Time Tracker
 
 ** Mar 2014
+   CLOCK: [2014-03-30 Sun 17:22]
+   CLOCK: [2014-03-30 Sun 16:56]--[2014-03-30 Sun 17:16] =>  0:20
+   CLOCK: [2014-03-30 Sun 14:16]--[2014-03-30 Sun 14:23] =>  0:07
+   CLOCK: [2014-03-30 Sun 13:30]--[2014-03-30 Sun 13:36] =>  0:06
+   CLOCK: [2014-03-30 Sun 12:27]--[2014-03-30 Sun 12:29] =>  0:02
+   CLOCK: [2014-03-30 Sun 07:44]--[2014-03-30 Sun 10:22] =>  2:38
    CLOCK: [2014-03-27 Thu 17:51]--[2014-03-27 Thu 18:01] =>  0:10
    CLOCK: [2014-03-27 Thu 17:45]--[2014-03-27 Thu 17:47] =>  0:02
    CLOCK: [2014-03-16 Sun 10:01]--[2014-03-16 Sun 15:53] =>  5:52

@@ -1,0 +1,15 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:FindFolder Traversal="Shallow">
+      <m:FolderShape>
+        <t:BaseShape>AllProperties</t:BaseShape>
+      </m:FolderShape>
+      <m:ParentFolderIds>
+          {% for fid, ck in folder_ids %}
+              <t:FolderId Id="{{ fid }}" ChangeKey="{{ ck }}" />
+          {% end %}
+      </m:ParentFolderIds>
+    </m:FindFolder>
+
+{% end %}
