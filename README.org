@@ -5,6 +5,10 @@ A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Orig
 * Status
 
 
+** Sun Mar 30 18:35:00 IST 2014
+
+   Able to discover all the contact folders and also create new ones.
+
 ** Thu Mar 27 22:34:10 IST 2014
 
    After struggling with SUDS and a bunch of random assorted soap clients,
@@ -27,7 +31,7 @@ A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Orig
 * Time Tracker
 
 ** Mar 2014
-   CLOCK: [2014-03-30 Sun 17:22]
+   CLOCK: [2014-03-30 Sun 17:22]--[2014-03-30 Sun 18:35] =>  1:13
    CLOCK: [2014-03-30 Sun 16:56]--[2014-03-30 Sun 17:16] =>  0:20
    CLOCK: [2014-03-30 Sun 14:16]--[2014-03-30 Sun 14:23] =>  0:07
    CLOCK: [2014-03-30 Sun 13:30]--[2014-03-30 Sun 13:36] =>  0:06
