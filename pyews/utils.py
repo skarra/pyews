@@ -1,7 +1,8 @@
 
 import os, urllib2, xml.dom.minidom
 
-REQUESTS_DIR = "templates"
+CUR_DIR = os.path.dirname(os.path.realpath(__file__))
+REQUESTS_DIR = os.path.abspath(os.path.join(CUR_DIR, "templates"))
 
 def template_fn (fn):
     # return os.path.abspath(os.path.join(REQUESTS_DIR, fn))

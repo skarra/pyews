@@ -55,7 +55,9 @@ class ExchangeService(object):
         self.loader = template.Loader(utils.REQUESTS_DIR)
 
     ##
-    ## First the methods that are similar to the EWS MS API
+    ## First the methods that are similar to the EWS Managed API. The names might
+    ## be similar but please note that there is no effort made to really be a
+    ## complete copy of the Managed API.
     ##
 
     def AutoDiscoverUrl (self):
@@ -64,6 +66,17 @@ class ExchangeService(object):
         creds = self.credentials
         self.ews_ad = EWSAutoDiscover(creds.user, creds.pwd)
         self.Url = self.ews_ad.discover()
+
+    def CreateFolder (self, parent_id, info):
+        """
+        info should be an array of (name, class) tuples. class should be one
+        of values in the ews.data.FolderClass enumeration.
+        """
+
+        req = self._render_template(utils.REQ_CREATE_FOLDER,
+                                    parent_folder_id=parent_id,
+                                    folders=info)
+        return self.send(req)
 
     ##
     ## Other external methods
@@ -116,36 +129,3 @@ class ExchangeService(object):
     def Url (self, url):
         self._Url = url
         self.wsdl_url = self._wsdl_url()
-
-def main ():
-    logging.getLogger().setLevel(logging.DEBUG)
-
-    global USER, PWD, EWS_URL
-
-    with open('auth.txt', 'r') as inf:
-        USER    = inf.readline().strip()
-        PWD     = inf.readline().strip()
-        EWS_URL = inf.readline().strip()
-
-        logging.debug('Username: %s; Url: %s', USER, EWS_URL)
-
-    creds = WebCredentials(USER, PWD)
-    ews = ExchangeService()
-    ews.credentials = creds
-
-    try:
-        ews.AutoDiscoverUrl()
-    except ExchangeAutoDiscoverError as e:
-        logging.info('ExchangeAutoDiscoverError: %s', e)
-        logging.info('Falling back on manual url setting.')
-        ews.Url = EWS_URL
-
-    ews.init_soap_client()
-    root = Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)
-
-    contacts = root.fetch_all_folders(types=FolderClass.Contacts)
-    for f in contacts:
-        print 'DisplayName: %s; Id: %s' % (f.DisplayName, f.Id)
-
-if __name__ == "__main__":
-    main()

@@ -117,6 +117,7 @@ class Folder:
                 f.DisplayName = folder_elem.find(dn).text
                 f.ChildFolderCount = folder_elem.find(cncn).text
                 f.FolderClass = folder_elem.find(QName_T('FolderClass')).text
+                f.TotalCount  = folder_elem.find(QName_T('TotalCount')).text
 
                 ret.append(f)
                 
@@ -170,6 +171,7 @@ class Folder:
         s = 'Name: %s' % slef.DisplayName
         s += '  ID                  : %s\n' % self.Id
         s += '  Parent Folder ID    : %s\n' % self.ParentFolderId
+        s += '  Total Count         : %s\n' % self.TotalCount
         s += '  ChildFolderCount    : %s\n' % self.ChildFolderCount
         s += '  WellKnownFolderName : %s\n' % self.wkfn
 

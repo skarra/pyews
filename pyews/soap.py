@@ -62,7 +62,6 @@ class SoapClient(object):
         soap_response xml message is first parsed"""
 
         if not root:
-            print utils.pretty_xml(soap_resp)
             root = SoapClient.parse_xml(soap_resp)
 
         for i in root.iter(QName_M('ResponseCode')):

@@ -1,0 +1,27 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:CreateFolder>
+      <m:ParentFolderId>
+        <t:FolderId Id="{{ parent_folder_id }}"/>
+      </m:ParentFolderId>
+
+      <m:Folders>
+        {% for folder in folders %}
+            {% if folder[1] == "IPF.Contact" %}
+                <t:ContactsFolder>
+                    <t:DisplayName>{{ folder[0] }}</t:DisplayName>
+                </t:ContactsFolder>
+            {% else %}
+                <!-- Need more types here. This may not really work for 
+                     other standard folder tpyes -->
+                <t:Folder>
+                    <t:DisplayName>{{ folder[0] }}</t:DisplayName>
+                    <t:FolderClass>{{ folder[1] }}</t:FolderClass>
+                </t:Folder>
+            {% end %}
+	{% end %}
+
+      </m:Folders>
+    </m:CreateFolder>
+{% end %}
