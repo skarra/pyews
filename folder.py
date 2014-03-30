@@ -167,8 +167,10 @@ class Folder:
         
 
     def __str__ (self):
-        s = ''
-        s += '  WellKnownFolderName: %s\n' % self.wkfn
-        s += '  Response Code: %s\n' % self.bind_response
+        s = 'Name: %s' % slef.DisplayName
+        s += '  ID                  : %s\n' % self.Id
+        s += '  Parent Folder ID    : %s\n' % self.ParentFolderId
+        s += '  ChildFolderCount    : %s\n' % self.ChildFolderCount
+        s += '  WellKnownFolderName : %s\n' % self.wkfn
 
         return s
