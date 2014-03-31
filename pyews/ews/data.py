@@ -59,4 +59,12 @@ class DistinguishedFolderId:
 class FolderClass:
     Contacts = 'IPF.Contact'
     Journals = 'IPF.Journal'
+    Tasks    = 'IPF.Task'
+    Calendars = 'IPF.Calendar'
     Notes = 'IPF.Note'
+
+class EWSMessageError(Exception):
+    pass
+
+class EWSCreateFolderError(Exception):
+    pass

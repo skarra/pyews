@@ -37,6 +37,9 @@ def QName_M (name):
 def QName_T (name):
     return QName(T_NAMESPACE, name)
 
+class SoapMessageError(Exception):
+    pass
+
 class SoapClient(object):
     def __init__ (self, service_url, user, pwd):
         self.url = service_url
@@ -49,7 +52,12 @@ class SoapClient(object):
                           headers={'Content-Type':'text/xml; charset=utf-8',
                                    "Accept": "text/xml"})
 
-        return r.text
+        r_code, node = SoapClient.get_response_code(r.text)
+        if r_code != 'NoError':
+            r_msg, node = SoapClient.get_error_msg(r.text, node)
+            raise SoapMessageError(r_msg)
+
+        return r.text, node
 
     @staticmethod
     def parse_xml (soap_resp):
@@ -69,7 +77,7 @@ class SoapClient(object):
 
     @staticmethod
     def get_error_msg (soap_resp, root=None):
-        if not root:
+        if root is not None:
             root = SoapClient.parse_xml(soap_resp)
 
         for i in root.iter(QName_M('MessageText')):

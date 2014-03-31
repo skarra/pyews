@@ -24,11 +24,11 @@ import utils
 from   utils            import pretty_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
-from   ews.data         import FolderClass
+from   ews.data         import FolderClass, EWSMessageError, EWSCreateFolderError
 from   folder import Folder
 
 from   tornado import template
-from   soap import SoapClient
+from   soap import SoapClient, SoapMessageError
 
 USER = u''
 PWD  = u''
@@ -52,6 +52,7 @@ class ExchangeService(object):
     def __init__ (self):
         self.ews_ad = None
         self.credentials = None
+        self.root_folder = None
         self.loader = template.Loader(utils.REQUESTS_DIR)
 
     ##
@@ -73,10 +74,17 @@ class ExchangeService(object):
         of values in the ews.data.FolderClass enumeration.
         """
 
+        logging.info('Sending folder create request to EWS...')
         req = self._render_template(utils.REQ_CREATE_FOLDER,
                                     parent_folder_id=parent_id,
                                     folders=info)
-        return self.send(req)
+        try:
+            resp, node = self.send(req)
+        except SoapMessageError as e:
+            raise EWSCreateFolderError(str(e))
+
+        logging.info('Sending folder create request to EWS...done')
+        return resp
 
     ##
     ## Other external methods
@@ -94,6 +102,12 @@ class ExchangeService(object):
         req  = self._render_template(utils.REQ_GET_FOLDER,
                                      folder_ids=elem)
         return self.soap.send(req)
+
+    def get_root_folder (self):
+        if not self.root_folder:
+            self.root_folder = Folder.bind(self,
+                                           WellKnownFolderName.MsgFolderRoot)
+        return self.root_folder
 
     ##
     ## Internal routines

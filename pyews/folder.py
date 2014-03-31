@@ -66,7 +66,7 @@ class Folder:
 
         req = service._render_template(utils.REQ_BIND_FOLDER,
                                        folder_name=wkfn)
-        resp = service.send(req)
+        resp, node = service.send(req)
         return Folder(service, wkfn, resp)
 
     ##
