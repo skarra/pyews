@@ -11,6 +11,7 @@ def template_fn (fn):
 REQ_AUTODIS_EPS = template_fn("autodiscover_endpoints.xml")
 REQ_GET_FOLDER  = template_fn("get_folder.xml")
 REQ_CREATE_FOLDER = template_fn("create_folder.xml")
+REQ_DELETE_FOLDER = template_fn("delete_folder.xml")
 REQ_BIND_FOLDER = template_fn("bind.xml")
 REQ_FIND_FOLDER_ID = template_fn("find_folder_id.xml")
 REQ_FIND_FOLDER_DI = template_fn("find_folder_distinguishd.xml")

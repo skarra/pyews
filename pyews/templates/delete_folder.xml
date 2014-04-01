@@ -1,0 +1,11 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:DeleteFolder DeleteType="{{ delete_type }}" >
+        <m:FolderIds>
+            {% for folder_id in folder_ids %}
+                <t:FolderId Id="{{ folder_id }}" />
+            {% end %}
+        </m:FolderIds>
+    </m:DeleteFolder>
+{% end %}

@@ -69,8 +69,7 @@ class ExchangeService(object):
         self.Url = self.ews_ad.discover()
 
     def CreateFolder (self, parent_id, info):
-        """
-        info should be an array of (name, class) tuples. class should be one
+        """info should be an array of (name, class) tuples. class should be one
         of values in the ews.data.FolderClass enumeration.
         """
 
@@ -84,6 +83,25 @@ class ExchangeService(object):
             raise EWSCreateFolderError(str(e))
 
         logging.info('Sending folder create request to EWS...done')
+        return Folder(self, resp)
+
+    def DeleteFolder (self, folder_ids, hard_delete=False):
+        """Delete all specified folder ids. If hard_delete is True then the
+        folders are completely nuked otherwise they are pushed to the Dumpster
+        if that is enabed server side.
+        """
+        logging.info('pimdb_ex:DeleteFolder() - deleting folder_ids: %s',
+                    folder_ids)
+
+        dt = 'HardDelete'if hard_delete else 'SoftDelete'
+        req = self._render_template(utils.REQ_DELETE_FOLDER,
+                                    delete_type=dt, folder_ids=folder_ids)
+        try:
+            resp, node = self.send(req)
+            logging.info('pimdb_ex:DeleteFolder() - successfully deleted.')
+        except SoapMessageError as e:
+            raise EWSCreateFolderError(str(e))
+
         return resp
 
     ##
