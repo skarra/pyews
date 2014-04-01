@@ -55,6 +55,41 @@ class Folder:
             self._init_fields(resp)
 
     ##
+    ## First the methods that are similar to the EWS Managed API. The names might
+    ## be similar but please note that there is no effort made to really be a
+    ## complete copy of the Managed API.
+    ##
+
+    def FindFolders (self, types=None, recursive=False):
+        """Walk through the entire folder hierarchy of the message store and
+        return an array of Folder objects of specified types.
+
+        types can be an array of folder types enumerated in ews.data.FolderClass 
+        """
+
+        root_id = self.Id
+        ck = self.ChangeKey
+
+        ret = []
+
+        req = self.service._render_template(utils.REQ_FIND_FOLDER_ID,
+                                       folder_ids=[(root_id, ck)])
+        resp, root = self.service.send(req)
+        folders, root = self._parse_resp_for_folders(resp, root)
+
+        for f in folders:
+            f.ParentFolderId = root_id
+
+            if not types or f.FolderClass in types:
+                ret.append(f)
+
+            if recursive and f.ChildFolderCount > 0:
+                logging.debug('Exploring deeper into: %s', f.DisplayName)
+                ret += f.FindFolders(types=types, recursive=recursive)
+
+        return ret
+
+    ##
     ## Class methods
     ##
 
@@ -128,44 +163,6 @@ class Folder:
     ##
     ## External Methods
     ##
-
-    def fetch_all_folders (self, root_id=None, ck=None, types=None):
-        """Walk through the entire folder hierarchy of the message store and
-        print one line per folder with some critical information. 
-
-        This is a recursive function. If you want to start enumerating at the
-        root folder of the current message store, invoke this routine without
-        any arguments. The defaults will ensure the root folder if fetched and
-        folders will be recursively enumerated.
-
-        types can be an array of folder types enumerated in ews.data.FolderClass 
-        """
-
-        if not root_id:
-            root_id = self.Id
-
-        if not ck:
-            ck = self.ChangeKey
-
-        ret = []
-
-        req = self.service._render_template(utils.REQ_FIND_FOLDER_ID,
-                                       folder_ids=[(root_id, ck)])
-        resp = self.service.send(req)
-        folders, root = self._parse_resp_for_folders(resp, None)
-
-        for f in folders:
-            f.ParentFolderId = root_id
-
-            if not types or f.FolderClass in types:
-                ret.append(f)
-
-            if f.ChildFolderCount > 0:
-                logging.debug('Exploring deeper into: %s', f.DisplayName)
-                ret += self.fetch_all_folders(f.Id, f.ChangeKey, types)
-
-        return ret
-        
 
     def __str__ (self):
         s = 'Name: %s' % slef.DisplayName
