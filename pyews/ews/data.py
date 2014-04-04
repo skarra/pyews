@@ -63,6 +63,15 @@ class FolderClass:
     Calendars = 'IPF.Calendar'
     Notes = 'IPF.Note'
 
+class ItemClass:
+    Activity = 'IPM.Activity'
+    Appointment = 'IPM.Appointment'
+    Contact = 'IPM.Contact'
+    DistList = 'IPM.DistList'
+    Note = 'IPM.Note'
+    Task = 'IPM.Task'
+
+
 class EWSMessageError(Exception):
     pass
 
