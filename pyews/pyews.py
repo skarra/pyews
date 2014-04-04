@@ -25,10 +25,13 @@ from   utils            import pretty_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
 from   ews.data         import FolderClass, EWSMessageError, EWSCreateFolderError
-from   folder import Folder
+from   ews.folder       import Folder
+from   ews.contact      import Contact
 
 from   tornado import template
-from   soap import SoapClient, SoapMessageError
+from   soap import SoapClient, SoapMessageError, QName_T
+
+gna = SoapClient.get_node_attribute
 
 USER = u''
 PWD  = u''
@@ -104,6 +107,55 @@ class ExchangeService(object):
 
         return resp
 
+    def FindItems (self, folder):
+        """
+        Find all the items in the given folder.  folder is an object of type
+        ews.folder.Folder
+        """
+
+        logging.info('pimdb_ex:FindItems() - fetching items in folder %s',
+                     folder.DisplayName)
+        logging.info('Total Count: %s', folder.TotalCount)
+
+        ## EWS does not allow to search by itemids. So what we will do is to
+        ## fetch all the items in the folder in batches, and just return the
+        ## items that exist in itemids array.
+        i = 0
+        while True:
+            req = self._render_template(utils.REQ_FIND_ITEM,
+                                        batch_size=self.batch_size(),
+                                        offset=i,
+                                        folder_id=folder.Id)
+            try:
+                resp, node = self.send(req)
+                last, ign = gna(resp, node, 'RootFolder',
+                                'IncludesLastItemInRange')
+                items = self._construct_items(resp, node)
+                if last == "true":
+                    break
+            except SoapMessageError as e:
+                logging.error('Could not fetch all items from folder - %s',
+                                e)
+                break
+
+            i += self.batch_size()
+            ## just a safety net to avoid inifinite loops
+            if i >= folder.TotalCount:
+                logging.warning('pimdb_ex.FindItems(): Breaking strange loop')
+                break
+
+    ##
+    ## Some internal messages
+    ##
+
+    def _construct_items (self, resp, node=None):
+        if node is not None:
+            node = SoapClient.parse_xml(resp)
+
+        ## As we support additional item types we will add more such loops.
+        for cxml in node.iter(QName_T('Contact')):
+            con = Contact(self, resp_node=cxml)
+
     ##
     ## Other external methods
     ##
@@ -113,6 +165,10 @@ class ExchangeService(object):
                                pwd=self.credentials.pwd)
 
     def send (self, req):
+        """
+        Will raise a SoapConnectionError if there is a connection problem.
+        """
+
         return self.soap.send(req)
 
     def get_distinguished_folder (self, name):
@@ -126,6 +182,9 @@ class ExchangeService(object):
             self.root_folder = Folder.bind(self,
                                            WellKnownFolderName.MsgFolderRoot)
         return self.root_folder
+
+    def batch_size (self):
+        return 100
 
     ##
     ## Internal routines

@@ -9,7 +9,7 @@ from   pyews.ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   pyews.ews.data         import DistinguishedFolderId, WellKnownFolderName
 from   pyews.ews.data         import FolderClass
 from   pyews                  import utils
-from   folder import Folder
+from   pyews.ews.folder       import Folder
 
 def main ():
     logging.getLogger().setLevel(logging.DEBUG)
@@ -37,7 +37,8 @@ def main ():
     ews.init_soap_client()
 
     root = bind()
-    test_create_folder(root)
+    # test_create_folder(root)
+    test_find_items(root)
 
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
@@ -51,6 +52,10 @@ def test_create_folder (parent):
     resp = ews.CreateFolder(parent.Id,
                             [('Test Contacts', FolderClass.Contacts)])
     print utils.pretty_xml(resp)
+
+def test_find_items (root):
+    contacts = root.FindFolders(types=FolderClass.Contacts)
+    ews.FindItems(contacts[0])
 
 if __name__ == "__main__":
     main()

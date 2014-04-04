@@ -1,0 +1,15 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:FindItem Traversal="Shallow">
+      <m:ItemShape>
+        <t:BaseShape>AllProperties</t:BaseShape>
+      </m:ItemShape>
+      <m:IndexedPageItemView MaxEntriesReturned="{{ batch_size }}" 
+			     Offset="{{ offset }}"
+			     BasePoint="Beginning" />
+      <m:ParentFolderIds>
+        <t:FolderId Id="{{ folder_id }} " />
+      </m:ParentFolderIds>
+    </m:FindItem>
+{% end %}
