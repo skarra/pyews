@@ -134,7 +134,7 @@ class Folder:
         with the parsed root object if it is not None. Return (ary, root)
         tuple."""
 
-        if not root:
+        if root is not None:
             root = SoapClient.parse_xml(resp)
 
         dn = QName_T('DisplayName')
@@ -153,6 +153,7 @@ class Folder:
                 f.ChildFolderCount = folder_elem.find(cncn).text
                 f.FolderClass = folder_elem.find(QName_T('FolderClass')).text
                 f.TotalCount  = folder_elem.find(QName_T('TotalCount')).text
+                f.TotalCount  = int(f.TotalCount)
 
                 ret.append(f)
                 
