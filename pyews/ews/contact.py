@@ -19,7 +19,7 @@
 
 from abc     import ABCMeta, abstractmethod
 from item    import Item
-from soap    import SoapClient, unQName
+from pyews.soap    import SoapClient, unQName
 
 gnd = SoapClient.get_node_detail
 
@@ -73,12 +73,12 @@ class Contact(Item):
         if n is not None:
             rnode = n
 
-        self.Title = self.._find_text_safely(rnode, 'Title')
+        self.Title = self._find_text_safely(rnode, 'Title')
         self.FirstName = self._find_text_safely(rnode, 'FirstName')
         self.MiddleName = self._find_text_safely(rnode, 'MiddleName')
         self.LastName = self._find_text_safely(rnode, 'LastName')
-        self.Suffix = self.._find_text_safely(rnode, 'Suffix')
-        self.Initials = self.._find_text_safely(rnode, 'Initials')
+        self.Suffix = self._find_text_safely(rnode, 'Suffix')
+        self.Initials = self._find_text_safely(rnode, 'Initials')
         self.FullName = self._find_text_safely(rnode, 'FullName')
         self.Nickname = self._find_text_safely(rnode, 'Nickname')
 
