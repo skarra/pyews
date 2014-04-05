@@ -16,6 +16,7 @@ REQ_BIND_FOLDER = template_fn("bind.xml")
 REQ_FIND_FOLDER_ID = template_fn("find_folder_id.xml")
 REQ_FIND_FOLDER_DI = template_fn("find_folder_distinguishd.xml")
 REQ_FIND_ITEM = template_fn("find_item.xml")
+REQ_GET_ITEM = template_fn("get_item.xml")
 
 def pretty_xml (x):
     return xml.dom.minidom.parseString(x).toprettyxml()

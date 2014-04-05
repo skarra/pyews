@@ -63,6 +63,11 @@ class ExchangeService(object):
     ## be similar but please note that there is no effort made to really be a
     ## complete copy of the Managed API.
     ##
+    ## FIXME: Each of these results in a EWS Request. We should just have a
+    ## base Request class along with specific request types derived from the
+    ## based request that does the needful. Hm. there is no end to this
+    ## 'properisation'.
+    ##
 
     def AutoDiscoverUrl (self):
         """blame the weird naming on the EWS MS APi."""
@@ -109,7 +114,7 @@ class ExchangeService(object):
 
     def FindItems (self, folder):
         """
-        Find all the items in the given folder.  folder is an object of type
+        Fetch all the items in the given folder.  folder is an object of type
         ews.folder.Folder
         """
 
@@ -121,6 +126,7 @@ class ExchangeService(object):
         ## fetch all the items in the folder in batches, and just return the
         ## items that exist in itemids array.
         i = 0
+        ret = []
         while True:
             req = self._render_template(utils.REQ_FIND_ITEM,
                                         batch_size=self.batch_size(),
@@ -131,6 +137,10 @@ class ExchangeService(object):
                 last, ign = gna(resp, node, 'RootFolder',
                                 'IncludesLastItemInRange')
                 items = self._construct_items(resp, node)
+
+                if items is not None:
+                    ret += items
+
                 if last == "true":
                     break
             except SoapMessageError as e:
@@ -144,6 +154,24 @@ class ExchangeService(object):
                 logging.warning('pimdb_ex.FindItems(): Breaking strange loop')
                 break
 
+        return ret
+
+    def GetItems (self, itemids):
+        """
+        itemids is an array of itemids, and we will fetch that stuff and
+        return an array of Item objects.
+        """
+
+        logging.info('pimdb_ex:GetItems() - fetching items....')
+        req = self._render_template(utils.REQ_GET_ITEM, itemids=itemids)
+        try:
+            resp, node = self.send(req)
+        except SoapMessageError as e:
+            raise EWSCreateFolderError(str(e))
+
+        logging.info('pimdb_ex:GetItems() - fetching items...done')
+        return self._construct_items(resp, node)
+
     ##
     ## Some internal messages
     ##
@@ -152,9 +180,12 @@ class ExchangeService(object):
         if node is not None:
             node = SoapClient.parse_xml(resp)
 
+        ret = []
         ## As we support additional item types we will add more such loops.
         for cxml in node.iter(QName_T('Contact')):
-            con = Contact(self, resp_node=cxml)
+            ret.append(Contact(self, resp_node=cxml))
+
+        return ret
 
     ##
     ## Other external methods

@@ -1,0 +1,15 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:GetItem>
+        <m:ItemShape>
+           <t:BaseShape>AllProperties</t:BaseShape>
+        </m:ItemShape>
+
+        <m:ItemIds>
+          {% for iid in itemids %}
+              <t:ItemId Id="{{ iid }}" />
+          {% end %}
+        </m:ItemIds>
+    </m:GetItem>
+{% end %}
