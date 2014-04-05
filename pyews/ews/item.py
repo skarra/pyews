@@ -18,8 +18,9 @@
 ## not, see <http://www.gnu.org/licenses/>.
 
 from         abc     import ABCMeta, abstractmethod
-from         soap    import SoapClient, QName_M, QName_T, unQName
-import       soap, utils
+from         pyews.soap    import SoapClient, QName_M, QName_T, unQName
+import       pyews.soap as soap
+import       pyews.utils as utils
 import       xml.etree.ElementTree as ET
 
 gnd = SoapClient.get_node_detail
@@ -36,8 +37,6 @@ class Item:
         self.parent = parent              # folder object
         self.service = service            # Exchange service object
         self.resp_node = resp_node
-
-        print 'resp_node: ', resp_node
 
         if self.resp_node is not None:
             self._init_base_fields_from_resp(resp_node)

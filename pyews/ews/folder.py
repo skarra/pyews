@@ -17,8 +17,9 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-import soap, utils
-from   soap import SoapClient, QName_M, QName_T, unQName
+import pyews.soap as soap
+import pyews.utils as utils
+from   pyews.soap import SoapClient, QName_M, QName_T, unQName
 import xml.etree.ElementTree as ET
 
 import logging
@@ -55,16 +56,17 @@ class Folder:
             self._init_fields(resp)
 
     ##
-    ## First the methods that are similar to the EWS Managed API. The names might
-    ## be similar but please note that there is no effort made to really be a
-    ## complete copy of the Managed API.
+    ## First the methods that are similar to the EWS Managed API. The names
+    ## might be similar but please note that there is no effort made to really
+    ## be a complete copy of the Managed API.
     ##
 
     def FindFolders (self, types=None, recursive=False):
         """Walk through the entire folder hierarchy of the message store and
         return an array of Folder objects of specified types.
 
-        types can be an array of folder types enumerated in ews.data.FolderClass 
+        types can be an array of folder types enumerated in
+        ews.data.FolderClass
         """
 
         root_id = self.Id
