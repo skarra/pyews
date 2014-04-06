@@ -24,7 +24,8 @@ import utils
 from   utils            import pretty_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
-from   ews.data         import FolderClass, EWSMessageError, EWSCreateFolderError
+from   ews.data         import FolderClass, EWSMessageError
+from   ews.data         import EWSCreateFolderError, EWSDeleteFolderError
 from   ews.folder       import Folder
 from   ews.contact      import Contact
 
@@ -108,7 +109,7 @@ class ExchangeService(object):
             resp, node = self.send(req)
             logging.info('pimdb_ex:DeleteFolder() - successfully deleted.')
         except SoapMessageError as e:
-            raise EWSCreateFolderError(str(e))
+            raise EWSDeleteFolderError(str(e))
 
         return resp
 
@@ -144,9 +145,7 @@ class ExchangeService(object):
                 if last == "true":
                     break
             except SoapMessageError as e:
-                logging.error('Could not fetch all items from folder - %s',
-                                e)
-                break
+                raise EWSMessagError(e)
 
             i += self.batch_size()
             ## just a safety net to avoid inifinite loops

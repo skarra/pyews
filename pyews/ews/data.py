@@ -77,3 +77,6 @@ class EWSMessageError(Exception):
 
 class EWSCreateFolderError(Exception):
     pass
+
+class EWSDeleteFolderError(Exception):
+    pass
