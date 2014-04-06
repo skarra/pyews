@@ -72,6 +72,27 @@ class ItemClass:
     Task = 'IPM.Task'
 
 
+class PhoneKey:
+    AssistantPhone   = 'AssistantPhone'
+    BusinessFax      = 'BusinessFax'
+    BusinessPhone    = 'BusinessPhone'
+    BusinessPhone2   = 'BusinessPhone2'
+    Callback         = 'Callback'
+    CarPhone         = 'CarPhone'
+    CompanyMainPhone = 'CompanyMainPhone'
+    HomeFax          = 'HomeFax'
+    HomePhone        = 'HomePhone'
+    HomePhone2       = 'HomePhone2'
+    Isdn             = 'Isdn'
+    MobilePhone      = 'MobilePhone'
+    OtherFax         = 'OtherFax'
+    OtherTelephone   = 'OtherTelephone'
+    Pager            = 'Pager'
+    PrimaryPhone     = 'PrimaryPhone'
+    RadioPhone       = 'RadioPhone'
+    Telex            = 'Telex'
+    TtyTddPhone      = 'TtyTddPhone'
+
 class EWSMessageError(Exception):
     pass
 

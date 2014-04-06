@@ -121,7 +121,6 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:FindItems() - fetching items in folder %s',
                      folder.DisplayName)
-        logging.info('Total Count: %s', folder.TotalCount)
 
         ## EWS does not allow to search by itemids. So what we will do is to
         ## fetch all the items in the folder in batches, and just return the
@@ -165,6 +164,7 @@ class ExchangeService(object):
         req = self._render_template(utils.REQ_GET_ITEM, itemids=itemids)
         try:
             resp, node = self.send(req)
+            logging.debug('%s', pretty_xml(resp))
         except SoapMessageError as e:
             raise EWSCreateFolderError(str(e))
 

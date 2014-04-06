@@ -20,8 +20,101 @@
 from abc     import ABCMeta, abstractmethod
 from item    import Item
 from pyews.soap    import SoapClient, unQName
+from utils   import pretty_xml
 
 gnd = SoapClient.get_node_detail
+
+class EmailAddresses:
+    class Email:
+        def __init__ (self):
+            self.Key = None
+            self.Name = None
+            self.RoutingType = None
+            self.MailboxType = None
+            self.Address = None
+
+        def __str__ (self):
+            return 'Key: %8s  Address: %s' % (self.Key, self.Address)
+
+        def __repr__ (self):
+            return self.__str__()
+
+    def __init__ (self, node):
+        self.emails = []
+
+        for child in node:
+            email = self.Email()
+            if 'Key' in child.attrib:
+                email.Key = child.attrib['Key']
+            if 'RoutingType' in child.attrib:
+                email.RoutingType = child.attrib['RoutingType']
+            if 'MailboxType' in child.attrib:
+                email.MailboxType = child.attrib['MailboxType']
+
+            email.Address = child.text
+            self.emails.append(email)
+
+    def __str__ (self):
+        s = '%s Numbers: ' % len(self.emails)
+        s += '; '.join([str(x) for x in self.emails])
+        return s
+
+    def __repr__ (self):
+        return self.__str__()
+
+class PhoneNumbers:
+    class Phone:
+        def __init__ (self):
+            self.Key = None               # ews.data.PhoneKey
+            self.Number = None
+
+        def __str__ (self):
+            return 'Key: %8s  Number: %s' % (self.Key, self.Number)
+
+        def __repr__ (self):
+            return self.__str__()
+
+    def __init__ (self, node):
+        self.phones = []
+
+        for child in node:
+            phone = self.Phone()
+            if 'Key' in child.attrib:
+                phone.Key = child.attrib['Key']
+
+            phone.Number = child.text
+            self.phones.append(phone)
+
+    def __str__ (self):
+        s = '%s Numbers: ' % len(self.phones)
+        s += '; '.join([str(x) for x in self.phones])
+        return s
+
+    def __repr__ (self):
+        return self.__str__()
+
+class ExtendedProperty:
+    def __init__ (self):
+        self.guid = None
+        self.prop_name = None
+        self.prop_type = None
+        self.prop_value = None
+
+    def init_from_xml (self, node):
+        """
+        None is a parsed xml node (Element). Extract the data that we can
+        from the node.
+        """
+
+        uri = node.find(QName_T('ExtendedFieldURI'))
+        if uri is None:
+            logging.debug('ExtendedProperty.init_from_xml(): no child node ' +
+                          'ExtendedFieldURI in node: %s', pretty_xml(node))
+        self.guid = uri.attrib['PropertySetId']
+        self.prop_name = uri.attrib['PropertyName']
+        self.prop_type = uri.attrib['PropertyString']
+
+        self.prop_value = node.find(QName_T('Value')).text
 
 class Contact(Item):
     """
@@ -31,6 +124,32 @@ class Contact(Item):
 
     def __init__ (self, service, parent=None, resp_node=None):
         Item.__init__(self, service, parent, resp_node)
+
+        self.FileAs = None
+        self.Alias = None
+        self.SpouseName = None
+        self.JobTitle = None
+        self.CompanyName = None
+        self.Department = None
+        self.Manager = None
+        self.AssistantName = None
+        self.Birthday = None
+        self.WeddingAnniversary = None
+        self.GivenName = None
+        self.Surname = None
+        self.DisplayName = None
+        self.Emails = None
+        self.Title = None
+        self.FirstName = None
+        self.MiddleName = None
+        self.LastName = None
+        self.Suffix = None
+        self.Initials = None
+        self.FullName = None
+        self.Nickname = None
+        self.Notes = None
+        self.Emails = None
+        self.Phones = None
 
         self._init_from_resp()
 
@@ -68,6 +187,14 @@ class Contact(Item):
                 self.Surname = child.text
             elif tag == 'DisplayName':
                 self.DisplayName = child.text
+            elif tag == 'Body':
+                ## FIXME: We are assuming a text body type, but they could
+                ## contain html or other types as well... Oh, well.
+                self.Notes = child.text
+            elif tag == 'EmailAddresses':
+                self.Emails = EmailAddresses(child)
+            elif tag == 'PhoneNumbers':
+                self.Phones = PhoneNumbers(child)
 
         n = rnode.find('CompleteName')
         if n is not None:
@@ -82,16 +209,36 @@ class Contact(Item):
         self.FullName = self._find_text_safely(rnode, 'FullName')
         self.Nickname = self._find_text_safely(rnode, 'Nickname')
 
+        ## It's a bit hard to understand why the hell they have so many
+        ## variants for the same stupid information... Oh well, let's just
+        ## have a few handy shortcuts for the information that matters
+        self._firstname = self.FirstName if self.FirstName else self.GivenName
+        self._lastname = self.LastName if self.LastName else self.Surname
+        if self.DisplayName:
+            self._displayname = self.DisplayName
+        elif self.FullName:
+            self._displayname = self.FullName
+        else:
+            self._displayname = self._firstname + ' ' + self._lastname
+
         ## yet to support following which are really multi-valued properties
         ## - Companies
-        ## - EmailAddresses
         ## - PhysicalAddresses
-        ## - PhoneNumbers
         ## - ImAddresses
+
+        ## yet to support following which are not returned normally and have
+        ## to be dealt with as extended properties.
+        ## - gender
+        ## - LastModifiedTime
 
     def __str__ (self):
         s  = 'ItemId: %s' % self.ItemId
-        s += '\nName: %s' % self.GivenName
+        s += '\nCreated: %s' % self.DateTimeCreated
+        s += '\nName: %s' % self._displayname
+        s += '\nPhones: %s' % self.Phones
+        s += '\nEmails: %s' % self.Emails
+        s += '\nNotes: %s' % self.Notes
+
         return s
 
 ## The XML Schema for a EWS Contact, taken from:
