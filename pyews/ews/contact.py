@@ -20,7 +20,7 @@
 from abc     import ABCMeta, abstractmethod
 from item    import Item
 from pyews.soap    import SoapClient, unQName
-from utils   import pretty_xml
+from pyews.utils   import pretty_xml
 
 gnd = SoapClient.get_node_detail
 
@@ -40,7 +40,7 @@ class EmailAddresses:
             return self.__str__()
 
     def __init__ (self, node):
-        self.emails = []
+        self.entries = []
 
         for child in node:
             email = self.Email()
@@ -52,11 +52,11 @@ class EmailAddresses:
                 email.MailboxType = child.attrib['MailboxType']
 
             email.Address = child.text
-            self.emails.append(email)
+            self.entries.append(email)
 
     def __str__ (self):
-        s = '%s Numbers: ' % len(self.emails)
-        s += '; '.join([str(x) for x in self.emails])
+        s = '%s Numbers: ' % len(self.entries)
+        s += '; '.join([str(x) for x in self.entries])
         return s
 
     def __repr__ (self):
@@ -75,7 +75,7 @@ class PhoneNumbers:
             return self.__str__()
 
     def __init__ (self, node):
-        self.phones = []
+        self.entries = []
 
         for child in node:
             phone = self.Phone()
@@ -83,11 +83,11 @@ class PhoneNumbers:
                 phone.Key = child.attrib['Key']
 
             phone.Number = child.text
-            self.phones.append(phone)
+            self.entries.append(phone)
 
     def __str__ (self):
-        s = '%s Numbers: ' % len(self.phones)
-        s += '; '.join([str(x) for x in self.phones])
+        s = '%s Numbers: ' % len(self.entries)
+        s += '; '.join([str(x) for x in self.entries])
         return s
 
     def __repr__ (self):
