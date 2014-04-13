@@ -19,7 +19,6 @@
 ## not, see <http://www.gnu.org/licenses/>.
 
 import logging, re, urllib2
-import pystache
 
 class ExchangeAutoDiscoverError(Exception):
     pass
@@ -34,8 +33,6 @@ class EWSAutoDiscover:
         if not res:
             raise InvalidUserEmail("Could not get domain from user email id")
         self.domain = res.group(2)
-
-        self.pysren = pystache.Renderer(file_extension="mustache")
 
     def discover (self):
         """Based on a username and password try to autodiscover the EWS
