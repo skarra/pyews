@@ -22,6 +22,8 @@
  ## be recognizabe for EWS / EWS Managed API users
 ##
 
+import mapitags
+
 ## perhaps this is not required?
 class WellKnownFolderName:
     MsgFolderRoot = 'msgfolderroot'
@@ -101,3 +103,36 @@ class EWSCreateFolderError(Exception):
 
 class EWSDeleteFolderError(Exception):
     pass
+
+MapiPropertyTypeType = {
+    mapitags.PT_UNSPECIFIED : "Null",
+    mapitags.PT_NULL        : "Null",
+    mapitags.PT_I2          : "Short",
+    mapitags.PT_LONG        : "Integer",
+    mapitags.PT_R4          : "Float",
+    mapitags.PT_DOUBLE      : "Double",
+    mapitags.PT_CURRENCY    : "Currency",
+    mapitags.PT_APPTIME     : "ApplicationTime",
+    mapitags.PT_ERROR       : "Error",
+    mapitags.PT_BOOLEAN     : "Boolean",
+    mapitags.PT_OBJECT      : "Object",
+    mapitags.PT_I8          : "Long",
+    mapitags.PT_STRING8     : "String",   # Hack. This really is 8-bit single char
+    mapitags.PT_UNICODE     : "String",
+    mapitags.PT_SYSTIME     : "SystemTime",
+    mapitags.PT_CLSID       : "CLSID",
+    mapitags.PT_BINARY      : "Binary",
+
+    ## Need to support the Array types
+    }
+
+def ews_pt (tag):
+    """Return the EWS Property Type enumeration for the specific MAPI Property
+    Tag. """
+
+    return MapiPropertyTypeType[mapitags.PROP_TYPE(tag)]
+
+def ews_pid (tag):
+    """Return the EWS Property ID for the specific MAPI Property Tag. """
+
+    return mapitags.PROP_ID(tag)

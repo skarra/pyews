@@ -4,6 +4,21 @@
     <m:GetItem>
         <m:ItemShape>
            <t:BaseShape>AllProperties</t:BaseShape>
+           <t:AdditionalProperties>
+               <!-- We will always request some additional information. This -->
+               <!-- can be made a bit more efficient, but what the hell. -->
+
+               <!-- Gender -->
+               <t:ExtendedFieldURI
+                    PropertyType="{{ ews_pt(mt.PR_GENDER) }}"
+                    PropertyTag="{{ ews_pid(mt.PR_GENDER) }}" />
+
+               <!-- Last Modifiation Time -->
+               <t:ExtendedFieldURI
+                    PropertyType="{{ ews_pt(mt.PR_LAST_MODIFICATION_TIME) }}"
+                    PropertyTag="{{ ews_pid(mt.PR_LAST_MODIFICATION_TIME) }}" />
+
+           </t:AdditionalProperties>
         </m:ItemShape>
 
         <m:ItemIds>

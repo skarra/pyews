@@ -95,9 +95,15 @@ class PhoneNumbers:
 
 class ExtendedProperty:
     def __init__ (self):
+        ## if self.dis_guid is used guid and prop_tag cannot be used
+        self.dis_guid = None
+
         self.guid = None
-        self.prop_name = None
+        self.prog_tag = None
+        self.prop_id = None
         self.prop_type = None
+
+        self.prop_name = None
         self.prop_value = None
 
     def init_from_xml (self, node):
@@ -110,7 +116,11 @@ class ExtendedProperty:
         if uri is None:
             logging.debug('ExtendedProperty.init_from_xml(): no child node ' +
                           'ExtendedFieldURI in node: %s', pretty_xml(node))
+
+        self.dis_guid = uri.attrib['DistinguishedPropertySetId']
         self.guid = uri.attrib['PropertySetId']
+        self.prop_tag = uri.attrib['PropertyTag']
+        self.prop_id = uri.attrib['PropertyId']
         self.prop_name = uri.attrib['PropertyName']
         self.prop_type = uri.attrib['PropertyString']
 
