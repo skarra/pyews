@@ -39,7 +39,7 @@ def main ():
     root = bind()
     # test_create_folder(root)
     cons = test_list_items(root)
-    test_find_item(cons[0].ItemId)
+    test_find_item(cons[0].itemid.text)
 
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
@@ -58,7 +58,7 @@ def test_list_items (root):
     cfs = root.FindFolders(types=FolderClass.Contacts)
     contacts = ews.FindItems(cfs[0])
     for con in contacts:
-        print 'Name: %-10s; itemid: %s' % (con.GivenName, con.ItemId)
+        print 'Name: %-10s; itemid: %s' % (con.given_name, con.itemid)
 
     return contacts
 

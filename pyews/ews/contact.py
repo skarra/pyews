@@ -17,12 +17,123 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-from abc     import ABCMeta, abstractmethod
-from item    import Item
+from item    import Item, Field
 from pyews.soap    import SoapClient, unQName
 from pyews.utils   import pretty_xml
 
 gnd = SoapClient.get_node_detail
+
+class FileAs(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'FileAs'
+
+class Alias(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Alias'
+
+class Title(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Title'
+
+class FirstName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'FirstName'
+
+class GivenName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'GivenName'
+
+class MiddleName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'MiddleName'
+
+class LastName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'LastName'
+
+class Surname(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Surname'
+
+class Suffix(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Suffix'
+
+class Initials(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Initials'
+
+class Nickname(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Nickname'
+
+class DisplayName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'DisplayName'
+
+class FullName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'FullName'
+
+class SpouseName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'FirstName'
+
+class JobTitle(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'JobTitle'
+
+class CompanyName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'CompanyName'
+
+class Department(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Department'
+
+class Manager(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Manager'
+
+class AssistantName(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'AssistantName'
+
+## FIXME: The values for these are strings, but might be better represented as
+## DateTime objects... Hm
+class Birthday(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Birthday'
+
+class WeddingAnniversary(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'WeddingAnniversary'
+
+class Notes(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'Body'
 
 class EmailAddresses:
     class Email:
@@ -85,6 +196,9 @@ class PhoneNumbers:
             phone.Number = child.text
             self.entries.append(phone)
 
+    def to_xml (self):
+        return None
+
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
         s += '; '.join([str(x) for x in self.entries])
@@ -132,34 +246,37 @@ class Contact(Item):
     object of this type is instantiated from a response.
     """
 
-    def __init__ (self, service, parent=None, resp_node=None):
-        Item.__init__(self, service, parent, resp_node)
+    def __init__ (self, service, parent_fid=None, resp_node=None):
+        Item.__init__(self, service, parent_fid, resp_node)
 
-        self.FileAs = None
-        self.Alias = None
-        self.SpouseName = None
-        self.JobTitle = None
-        self.CompanyName = None
-        self.Department = None
-        self.Manager = None
-        self.AssistantName = None
-        self.Birthday = None
-        self.WeddingAnniversary = None
-        self.GivenName = None
-        self.Surname = None
-        self.DisplayName = None
-        self.Emails = None
-        self.Title = None
-        self.FirstName = None
-        self.MiddleName = None
-        self.LastName = None
-        self.Suffix = None
-        self.Initials = None
-        self.FullName = None
-        self.Nickname = None
-        self.Notes = None
-        self.Emails = None
-        self.Phones = None
+        self.file_as      = FileAs()
+        self.alias        = Alias()
+        self.title        = Title()
+        self.given_name   = GivenName()
+        self.first_name   = FirstName()
+        self.middle_name  = MiddleName()
+        self.last_name    = LastName()
+        self.surname      = Surname()
+        self.suffix       = Suffix()
+        self.initials     = Initials()
+        self.nickname     = Nickname()
+        self.display_name = DisplayName()
+        self.full_name    = FullName()
+
+        self.spouse_name = SpouseName()
+
+        self.job_title      = JobTitle()
+        self.company_name   = CompanyName()
+        self.department     = Department()
+        self.manager        = Manager()
+        self.assistant_name = AssistantName()
+
+        self.birthday    = Birthday()
+        self.anniversary = WeddingAnniversary()
+
+        self.notes = Notes()
+        # self.emails = Emails()
+        # self.phones = Phones()
 
         self._init_from_resp()
 
@@ -172,62 +289,71 @@ class Contact(Item):
             tag = unQName(child.tag)
 
             if tag == 'FileAs':
-                self.FileAs = child.text
+                self.file_as.text = child.text
             elif tag == 'Alias':
-                self.Alias = child.text
+                self.alias.text = child.text
             elif tag == 'SpouseName':
-                self.SpouseName = child.text
+                self.spouse_nam.text = child.text
             elif tag == 'JobTitle':
-                self.JobTitle = child.text
+                self.job_title.text = child.text
             elif tag == 'CompanyName':
-                self.CompanyName = child.text
+                self.company_name.text = child.text
             elif tag == 'Department':
-                self.Department = child.text
+                self.department.text = child.text
             elif tag == 'Manager':
-                self.Manager = child.text
+                self.manager.text = child.text
             elif tag == 'AssistantName':
-                self.AssistantName = child.text
+                self.assistant_name.text = child.text
             elif tag == 'Birthday':
-                self.Birthday = child.text
+                self.birthday.text = child.text
             elif tag == 'WeddingAnniversary':
-                self.WeddingAnniversary = child.text
+                self.anniversary.text = child.text
             elif tag == 'GivenName':
-                self.GivenName = child.text
+                self.given_name.text = child.text
             elif tag == 'Surname':
-                self.Surname = child.text
+                self.surname.tex = child.text
             elif tag == 'DisplayName':
-                self.DisplayName = child.text
+                self.display_name.text = child.text
             elif tag == 'Body':
                 ## FIXME: We are assuming a text body type, but they could
                 ## contain html or other types as well... Oh, well.
-                self.Notes = child.text
-            elif tag == 'EmailAddresses':
-                self.Emails = EmailAddresses(child)
-            elif tag == 'PhoneNumbers':
-                self.Phones = PhoneNumbers(child)
+                self.notes.text = child.text
+
+            # elif tag == 'EmailAddresses':
+            #     self.Emails = EmailAddresses(child)
+            # elif tag == 'PhoneNumbers':
+            #     self.Phones = PhoneNumbers(child)
 
         n = rnode.find('CompleteName')
         if n is not None:
             rnode = n
 
-        self.Title = self._find_text_safely(rnode, 'Title')
-        self.FirstName = self._find_text_safely(rnode, 'FirstName')
-        self.MiddleName = self._find_text_safely(rnode, 'MiddleName')
-        self.LastName = self._find_text_safely(rnode, 'LastName')
-        self.Suffix = self._find_text_safely(rnode, 'Suffix')
-        self.Initials = self._find_text_safely(rnode, 'Initials')
-        self.FullName = self._find_text_safely(rnode, 'FullName')
-        self.Nickname = self._find_text_safely(rnode, 'Nickname')
+        self.title.text = self._find_text_safely(rnode, 'Title')
+        self.first_name.text = self._find_text_safely(rnode, 'FirstName')
+        self.middle_name.text = self._find_text_safely(rnode, 'MiddleName')
+        self.last_name.text = self._find_text_safely(rnode, 'LastName')
+        self.suffix.text = self._find_text_safely(rnode, 'Suffix')
+        self.initials.text = self._find_text_safely(rnode, 'Initials')
+        self.full_name.text = self._find_text_safely(rnode, 'FullName')
+        self.nickname.text = self._find_text_safely(rnode, 'Nickname')
 
         ## It's a bit hard to understand why the hell they have so many
         ## variants for the same stupid information... Oh well, let's just
         ## have a few handy shortcuts for the information that matters
-        self._firstname = self.FirstName if self.FirstName else self.GivenName
-        self._lastname = self.LastName if self.LastName else self.Surname
-        if self.DisplayName:
-            self._displayname = self.DisplayName
-        elif self.FullName:
-            self._displayname = self.FullName
+        if self.first_name.text:
+            self._firstname = self.first_name.text
+        else:
+            self._firstname = self.given_name.text
+
+        if self.last_name.text:
+            self._lastname = self.last_name.text
+        else:
+            self._lastname = self.surname.text
+
+        if self.display_name.text:
+            self._displayname = self.display_name.text
+        elif self.full_name.text:
+            self._displayname = self.full_name.text
         else:
             self._displayname = self._firstname + ' ' + self._lastname
 
@@ -242,12 +368,12 @@ class Contact(Item):
         ## - LastModifiedTime
 
     def __str__ (self):
-        s  = 'ItemId: %s' % self.ItemId
-        s += '\nCreated: %s' % self.DateTimeCreated
+        s  = 'ItemId: %s' % self.itemid
+        s += '\nCreated: %s' % self.created_time
         s += '\nName: %s' % self._displayname
-        s += '\nPhones: %s' % self.Phones
-        s += '\nEmails: %s' % self.Emails
-        s += '\nNotes: %s' % self.Notes
+        # s += '\nPhones: %s' % self.Phones
+        # s += '\nEmails: %s' % self.Emails
+        s += '\nNotes: %s' % self.notes
 
         return s
 

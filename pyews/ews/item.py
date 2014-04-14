@@ -25,6 +25,58 @@ import       xml.etree.ElementTree as ET
 
 gnd = SoapClient.get_node_detail
 
+class Field:
+    __metaclass__ = ABCMeta
+
+    def __init__ (self, text=None):
+        self.tag = None
+        self.text = text
+
+    def to_xml (self):
+        if self.text:
+            return '<t:%s>%s</t:%s>' % (self.tag, self.text, self.tag)
+        else:
+            return ''
+
+    def __str__ (self):
+        return self.text if self.text is not None else ""
+
+class ItemId(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'ItemId'
+
+class ChangeKey(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'ChangeKey'
+
+class ParentFolderId(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'ParentFolderId'
+
+class ParentFolderChangeKey(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'ParentFolderChangeKey'
+
+class ItemClass(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'ItemClass'
+ 
+## This might not be so easy...
+class LastModifiedTime(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'LastModifiedTime'
+
+class DateTimeCreated(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, text)
+        self.tag = 'DateTimeCreated'
+
 class Item:
     """
     Abstract wrapper class around an Exchange Item object. Frequently an
@@ -33,9 +85,9 @@ class Item:
 
     __metaclass__ = ABCMeta
 
-    def __init__ (self, service, parent=None, resp_node=None):
-        self.parent = parent              # folder object
-        self.service = service            # Exchange service object
+    def __init__ (self, service, parent_fid=None, resp_node=None):
+        self.ParentFolderId = parent_fid             # folder object
+        self.service = service                       # Exchange service object
         self.resp_node = resp_node
 
         if self.resp_node is not None:
@@ -53,14 +105,14 @@ class Item:
             tag = unQName(child.tag)
 
             if tag == 'ItemId':
-                self.ItemId = child.attrib['Id']
-                self.ChangeKey = child.attrib['ChangeKey']
+                self.itemid = ItemId(child.attrib['Id'])
+                self.change_key = ChangeKey(child.attrib['ChangeKey'])
             elif tag == 'ParentFolderId':
-                self.ParentFolderId = child.attrib['Id']
-                self.ParentFolderChangeKey = child.attrib['ChangeKey']
+                self.parent_fid = ParentFolderId(child.attrib['Id'])
+                self.parent_fck = ParentFolderChangeKey(child.attrib['ChangeKey'])
             elif tag == 'ItemClass':
-                self.ItemClass = child.text
+                self.item_class = ItemClass(child.text)
             elif tag == 'LastModifiedTime':
-                self.LastModifiedTime = child.text
+                self.last_modified_time = LastModifiedTime(child.text)
             elif tag == 'DateTimeCreated':
-                self.DateTimeCreated = child.text
+                self.created_time = DateTimeCreated(child.text)
