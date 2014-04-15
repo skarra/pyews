@@ -145,7 +145,6 @@ class EmailAddresses(Field):
                 'RoutingType' : None,
                 'MailBoxType' : None
                 }
-            self.text = None
 
         def __str__ (self):
             return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.text)
@@ -176,27 +175,34 @@ class EmailAddresses(Field):
     def __repr__ (self):
         return self.__str__()
 
-class PhoneNumbers:
-    class Phone:
+class PhoneNumbers(Field):
+    class Phone(Field):
         def __init__ (self):
-            self.Key = None               # ews.data.PhoneKey
-            self.Number = None
+            self.tag = 'Entry'
+            self.attrib = {
+                'Key' : None,               # ews.data.PhoneKey
+                }
 
         def __str__ (self):
-            return 'Key: %8s  Number: %s' % (self.Key, self.Number)
+            return 'Key: %8s  Number: %s' % (self.attrib['Key'], self.text)
 
         def __repr__ (self):
             return self.__str__()
 
-    def __init__ (self, node):
+    def __init__ (self, node=None):
+        self.tag = 'PhoneNumbers'
         self.entries = []
 
+        if node is not None:
+            self.populate_from_node(node)
+
+    def populate_from_node (self, node):
         for child in node:
             phone = self.Phone()
-            if 'Key' in child.attrib:
-                phone.Key = child.attrib['Key']
+            for k, v in child.attrib.iteritems():
+                phone.add_attrib(k, v)
 
-            phone.Number = child.text
+            phone.text = child.text
             self.entries.append(phone)
 
     def to_xml (self):
@@ -279,7 +285,7 @@ class Contact(Item):
 
         self.notes = Notes()
         self.emails = EmailAddresses()
-        # self.phones = Phones()
+        self.phones = PhoneNumbers()
 
         self._init_from_resp()
 
@@ -323,8 +329,8 @@ class Contact(Item):
                 self.notes.text = child.text
             elif tag == 'EmailAddresses':
                 self.emails.populate_from_node(child)
-            # elif tag == 'PhoneNumbers':
-            #     self.Phones = PhoneNumbers(child)
+            elif tag == 'PhoneNumbers':
+                self.phones.populate_from_node(child)
 
         n = rnode.find('CompleteName')
         if n is not None:
@@ -374,7 +380,7 @@ class Contact(Item):
         s  = 'ItemId: %s' % self.itemid
         s += '\nCreated: %s' % self.created_time
         s += '\nName: %s' % self._displayname
-        # s += '\nPhones: %s' % self.Phones
+        s += '\nPhones: %s' % self.phones
         s += '\nEmails: %s' % self.emails
         s += '\nNotes: %s' % self.notes
 
