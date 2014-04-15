@@ -30,11 +30,17 @@ class Field:
 
     def __init__ (self, text=None):
         self.tag = None
+        self.attrib = {}
         self.text = text
+
+    def add_attrib (self, key, val):
+        self.attrib.update({key: val})
 
     def to_xml (self):
         if self.text:
-            return '<t:%s>%s</t:%s>' % (self.tag, self.text, self.tag)
+            ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
+            return '<t:%s %s>%s</t:%s>' % (self.tag, ' '.join(ats),
+                                           self.text, self.tag)
         else:
             return ''
 

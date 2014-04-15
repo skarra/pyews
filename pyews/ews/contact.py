@@ -135,34 +135,37 @@ class Notes(Field):
         Field.__init__(self, text)
         self.tag = 'Body'
 
-class EmailAddresses:
-    class Email:
-        def __init__ (self):
-            self.Key = None
-            self.Name = None
-            self.RoutingType = None
-            self.MailboxType = None
-            self.Address = None
+class EmailAddresses(Field):
+    class Email(Field):
+        def __init__ (self, text=None):
+            self.tag = 'Entry'
+            self.attrib = {
+                'Key' : None,
+                'Name' : None,
+                'RoutingType' : None,
+                'MailBoxType' : None
+                }
+            self.text = None
 
         def __str__ (self):
-            return 'Key: %8s  Address: %s' % (self.Key, self.Address)
+            return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.text)
 
         def __repr__ (self):
             return self.__str__()
 
-    def __init__ (self, node):
+    def __init__ (self, node=None):
+        self.tag = 'EmailAddresses'
         self.entries = []
+        if node is not None:
+            self.populate_from_node(node)
 
+    def populate_from_node (self, node):
         for child in node:
             email = self.Email()
-            if 'Key' in child.attrib:
-                email.Key = child.attrib['Key']
-            if 'RoutingType' in child.attrib:
-                email.RoutingType = child.attrib['RoutingType']
-            if 'MailboxType' in child.attrib:
-                email.MailboxType = child.attrib['MailboxType']
+            for k, v in child.attrib.iteritems():
+                email.add_attrib(k, v)
 
-            email.Address = child.text
+            email.text = child.text
             self.entries.append(email)
 
     def __str__ (self):
@@ -275,7 +278,7 @@ class Contact(Item):
         self.anniversary = WeddingAnniversary()
 
         self.notes = Notes()
-        # self.emails = Emails()
+        self.emails = EmailAddresses()
         # self.phones = Phones()
 
         self._init_from_resp()
@@ -311,21 +314,21 @@ class Contact(Item):
             elif tag == 'GivenName':
                 self.given_name.text = child.text
             elif tag == 'Surname':
-                self.surname.tex = child.text
+                self.surname.text = child.text
             elif tag == 'DisplayName':
                 self.display_name.text = child.text
             elif tag == 'Body':
                 ## FIXME: We are assuming a text body type, but they could
                 ## contain html or other types as well... Oh, well.
                 self.notes.text = child.text
-
-            # elif tag == 'EmailAddresses':
-            #     self.Emails = EmailAddresses(child)
+            elif tag == 'EmailAddresses':
+                self.emails.populate_from_node(child)
             # elif tag == 'PhoneNumbers':
             #     self.Phones = PhoneNumbers(child)
 
         n = rnode.find('CompleteName')
         if n is not None:
+            print 'Yo, ma =========================='
             rnode = n
 
         self.title.text = self._find_text_safely(rnode, 'Title')
@@ -372,7 +375,7 @@ class Contact(Item):
         s += '\nCreated: %s' % self.created_time
         s += '\nName: %s' % self._displayname
         # s += '\nPhones: %s' % self.Phones
-        # s += '\nEmails: %s' % self.Emails
+        s += '\nEmails: %s' % self.emails
         s += '\nNotes: %s' % self.notes
 
         return s
