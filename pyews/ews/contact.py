@@ -33,112 +33,119 @@ class Alias(Field):
         Field.__init__(self, text)
         self.tag = 'Alias'
 
-class Title(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Title'
-
-class FirstName(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'FirstName'
-
-class GivenName(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'GivenName'
-
-class MiddleName(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'MiddleName'
-
-class LastName(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'LastName'
-
-class Surname(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Surname'
-
-class Suffix(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Suffix'
-
-class Initials(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Initials'
-
-class Nickname(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Nickname'
-
 class DisplayName(Field):
     def __init__ (self, text=None):
         Field.__init__(self, text)
         self.tag = 'DisplayName'
 
-class FullName(Field):
+class CompleteName(Field):
+    ##
+    ## Exchnage handling of some of the name fields can, at best, be described
+    ## as strange.... Some of these fields can be found outside of this
+    ## complex data type. However we will try to make it simple and only use
+    ## CompelteName field when possible
+    ##
+    class Title(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Title', text)
+
+    class FirstName(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'FirstName', text)
+
+    class GivenName(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'GivenName', text)
+
+    class MiddleName(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'MiddleName', text)
+
+    class LastName(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'LastName', text)
+
+    class Surname(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Surname', text)
+
+    class Suffix(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Suffix', text)
+
+    class Initials(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Initials', text)
+
+    class Nickname(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Nickname', text)
+
+    class FullName(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'FullName', text)
+
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'FullName'
+        Field.__init__(self, 'CompleteName', text)
+
+        self.title        = self.Title()
+        self.given_name   = self.GivenName()
+        self.first_name   = self.FirstName()
+        self.middle_name  = self.MiddleName()
+        self.last_name    = self.LastName()
+        self.surname      = self.Surname()
+        self.suffix       = self.Suffix()
+        self.initials     = self.Initials()
+        self.nickname     = self.Nickname()
+        self.full_name    = self.FullName()
+
+        self.children = [self.title, self.given_name, self.first_name,
+                         self.middle_name, self.last_name, self.surname,
+                         self.suffix, self.initials, self.nickname,
+                         self.full_name]
 
 class SpouseName(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'FirstName'
+        Field.__init__(self, 'SpouseName', text)
 
 class JobTitle(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'JobTitle'
+        Field.__init__(self, 'JobTitle', text)
 
 class CompanyName(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'CompanyName'
+        Field.__init__(self, 'CompanyName', text)
 
 class Department(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Department'
+        Field.__init__(self, 'Department', text)
 
 class Manager(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Manager'
+        Field.__init__(self, 'Manager', text)
 
 class AssistantName(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'AssistantName'
+        Field.__init__(self, 'AssistantName', text)
 
 ## FIXME: The values for these are strings, but might be better represented as
 ## DateTime objects... Hm
 class Birthday(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Birthday'
+        Field.__init__(self, 'Birthday', text)
 
 class WeddingAnniversary(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'WeddingAnniversary'
+        Field.__init__(self, 'WeddingAnniversary', text)
 
 class Notes(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Body'
+        Field.__init__(self, 'Body', text)
 
 class EmailAddresses(Field):
     class Email(Field):
         def __init__ (self, text=None):
-            self.tag = 'Entry'
+            Field.__init__(self, 'Entry', text)
             self.attrib = {
                 'Key' : None,
                 'Name' : None,
@@ -153,8 +160,8 @@ class EmailAddresses(Field):
             return self.__str__()
 
     def __init__ (self, node=None):
-        self.tag = 'EmailAddresses'
-        self.entries = []
+        Field.__init__(self, 'EmailAddresses')
+        self.children = self.entries = []
         if node is not None:
             self.populate_from_node(node)
 
@@ -177,8 +184,8 @@ class EmailAddresses(Field):
 
 class PhoneNumbers(Field):
     class Phone(Field):
-        def __init__ (self):
-            self.tag = 'Entry'
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Entry', text)
             self.attrib = {
                 'Key' : None,               # ews.data.PhoneKey
                 }
@@ -190,8 +197,8 @@ class PhoneNumbers(Field):
             return self.__str__()
 
     def __init__ (self, node=None):
-        self.tag = 'PhoneNumbers'
-        self.entries = []
+        Field.__init__(self, 'PhoneNumbers')
+        self.children = self.entries = []
 
         if node is not None:
             self.populate_from_node(node)
@@ -204,9 +211,6 @@ class PhoneNumbers(Field):
 
             phone.text = child.text
             self.entries.append(phone)
-
-    def to_xml (self):
-        return None
 
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
@@ -256,22 +260,12 @@ class Contact(Item):
     """
 
     def __init__ (self, service, parent_fid=None, resp_node=None):
-        Item.__init__(self, service, parent_fid, resp_node)
+        Item.__init__(self, service, parent_fid, resp_node, tag='Contact')
 
         self.file_as      = FileAs()
         self.alias        = Alias()
-        self.title        = Title()
-        self.given_name   = GivenName()
-        self.first_name   = FirstName()
-        self.middle_name  = MiddleName()
-        self.last_name    = LastName()
-        self.surname      = Surname()
-        self.suffix       = Suffix()
-        self.initials     = Initials()
-        self.nickname     = Nickname()
+        self.complete_name = CompleteName()
         self.display_name = DisplayName()
-        self.full_name    = FullName()
-
         self.spouse_name = SpouseName()
 
         self.job_title      = JobTitle()
@@ -286,6 +280,12 @@ class Contact(Item):
         self.notes = Notes()
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
+
+        self.children = [self.file_as, self.alias, self.complete_name,
+                         self.display_name, self.spouse_name, self.job_title,
+                         self.company_name, self.department, self.manager,
+                         self.assistant_name, self.birthday, self.anniversary,
+                         self.notes, self.emails, self.phones]
 
         self._init_from_resp()
 
@@ -318,9 +318,11 @@ class Contact(Item):
             elif tag == 'WeddingAnniversary':
                 self.anniversary.text = child.text
             elif tag == 'GivenName':
-                self.given_name.text = child.text
+                self.complete_name.given_name.text = child.text
             elif tag == 'Surname':
-                self.surname.text = child.text
+                self.complete_name.surname.text = child.text
+            elif tag == 'Initials':
+                self.complete_name.initials.text = child.text
             elif tag == 'DisplayName':
                 self.display_name.text = child.text
             elif tag == 'Body':
@@ -337,32 +339,33 @@ class Contact(Item):
             print 'Yo, ma =========================='
             rnode = n
 
-        self.title.text = self._find_text_safely(rnode, 'Title')
-        self.first_name.text = self._find_text_safely(rnode, 'FirstName')
-        self.middle_name.text = self._find_text_safely(rnode, 'MiddleName')
-        self.last_name.text = self._find_text_safely(rnode, 'LastName')
-        self.suffix.text = self._find_text_safely(rnode, 'Suffix')
-        self.initials.text = self._find_text_safely(rnode, 'Initials')
-        self.full_name.text = self._find_text_safely(rnode, 'FullName')
-        self.nickname.text = self._find_text_safely(rnode, 'Nickname')
+        fts = self._find_text_safely
+        self.complete_name.title.text = fts(rnode, 'Title')
+        self.complete_name.first_name.text = fts(rnode, 'FirstName')
+        self.complete_name.middle_name.text = fts(rnode, 'MiddleName')
+        self.complete_name.last_name.text = fts(rnode, 'LastName')
+        self.complete_name.suffix.text = fts(rnode, 'Suffix')
+        self.complete_name.initials.text = fts(rnode, 'Initials')
+        self.complete_name.full_name.text = fts(rnode, 'FullName')
+        self.complete_name.nickname.text = fts(rnode, 'Nickname')
 
         ## It's a bit hard to understand why the hell they have so many
         ## variants for the same stupid information... Oh well, let's just
         ## have a few handy shortcuts for the information that matters
-        if self.first_name.text:
-            self._firstname = self.first_name.text
+        if self.complete_name.first_name.text:
+            self._firstname = self.complete_name.first_name.text
         else:
-            self._firstname = self.given_name.text
+            self._firstname = self.complete_name.given_name.text
 
-        if self.last_name.text:
-            self._lastname = self.last_name.text
+        if self.complete_name.last_name.text:
+            self._lastname = self.complete_name.last_name.text
         else:
-            self._lastname = self.surname.text
+            self._lastname = self.complete_name.surname.text
 
         if self.display_name.text:
             self._displayname = self.display_name.text
-        elif self.full_name.text:
-            self._displayname = self.full_name.text
+        elif self.complete_name.full_name.text:
+            self._displayname = self.complete_name.full_name.text
         else:
             self._displayname = self._firstname + ' ' + self._lastname
 

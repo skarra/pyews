@@ -28,20 +28,33 @@ gnd = SoapClient.get_node_detail
 class Field:
     __metaclass__ = ABCMeta
 
-    def __init__ (self, text=None):
-        self.tag = None
-        self.attrib = {}
+    def __init__ (self, tag=None, text=None):
+        self.tag = tag
         self.text = text
+        self.attrib = {}
+        self.children = []
 
     def add_attrib (self, key, val):
         self.attrib.update({key: val})
 
     def to_xml (self):
-        if self.text:
+        print 'Tag: %s' % self.tag
+        print '  children: ', len(self.children)
+        print '  text: ', self.text
+
+        if ((self.text is not None) or (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
-            return '<t:%s %s>%s</t:%s>' % (self.tag, ' '.join(ats),
-                                           self.text, self.tag)
+            cs =  '\n'.join([x.to_xml() for x in self.children])
+            text = self.text if self.text is not None else ''
+
+            ret =  '<t:%s %s>\n%s\n%s</t:%s>' % (self.tag, ' '.join(ats), cs,
+                                                text, self.tag)
+            print '=== Start'
+            print ret
+            print '=== Finish'
+            return ret
         else:
+            print 'Empty'
             return ''
 
     def __str__ (self):
@@ -49,8 +62,7 @@ class Field:
 
 class ItemId(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'ItemId'
+        Field.__init__(self, 'ItemId', text)
 
 class ChangeKey(Field):
     def __init__ (self, text=None):
@@ -59,31 +71,26 @@ class ChangeKey(Field):
 
 class ParentFolderId(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'ParentFolderId'
+        Field.__init__(self, 'ParentFolderId', text)
 
 class ParentFolderChangeKey(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'ParentFolderChangeKey'
+        Field.__init__(self, 'ParentFolderChangeKey', text)
 
 class ItemClass(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'ItemClass'
+        Field.__init__(self, 'ItemClass', text)
  
 ## This might not be so easy...
 class LastModifiedTime(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'LastModifiedTime'
+        Field.__init__(self, 'LastModifiedTime', text)
 
 class DateTimeCreated(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'DateTimeCreated'
+        Field.__init__(self, 'DateTimeCreated', text)
 
-class Item:
+class Item(Field):
     """
     Abstract wrapper class around an Exchange Item object. Frequently an
     object of this type is instantiated from a response.
@@ -91,7 +98,9 @@ class Item:
 
     __metaclass__ = ABCMeta
 
-    def __init__ (self, service, parent_fid=None, resp_node=None):
+    def __init__ (self, service, parent_fid=None, resp_node=None, tag='Item'):
+        Field.__init__(self, tag=tag)
+
         self.ParentFolderId = parent_fid             # folder object
         self.service = service                       # Exchange service object
         self.resp_node = resp_node

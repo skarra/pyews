@@ -58,7 +58,8 @@ def test_list_items (root):
     cfs = root.FindFolders(types=FolderClass.Contacts)
     contacts = ews.FindItems(cfs[0])
     for con in contacts:
-        print 'Name: %-10s; itemid: %s' % (con.given_name, con.itemid)
+        n = con.display_name.text
+        print 'Name: %-10s; itemid: %s' % (n, con.itemid)
 
     return contacts
 
@@ -67,7 +68,7 @@ def test_find_item (itemid):
     if cons is None or len(cons) <= 0:
         print 'WTF. Could not find itemid ', itemid
     else:
-        print cons[0]
+        print cons[0].to_xml()
 
 if __name__ == "__main__":
     main()
