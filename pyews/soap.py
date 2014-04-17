@@ -43,7 +43,14 @@ def QName_T (name):
     return QName(T_NAMESPACE, name)
 
 class SoapMessageError(Exception):
-    pass
+    def __init__ (self, code, xml_resp=None, node=None):
+        """xml_resp is the raw xml test
+        node is a reference to the parsed xml root element.
+        code is the response code"""
+
+        self.xml_resp = xml_resp
+        self.node = node
+        self.resp_code = code
 
 class SoapConnectionError(Exception):
     pass
@@ -72,8 +79,8 @@ class SoapClient(object):
 
         r_code, node = SoapClient.get_response_code(r.text)
         if r_code != 'NoError':
-            r_msg, node = SoapClient.get_error_msg(r.text, node, code=r_code)
-            raise SoapMessageError(r_msg)
+            # r_msg, node = SoapClient.get_error_msg(r.text, node, code=r_code)
+            raise SoapMessageError(code=r_code, xml_resp=r.text, node=node)
 
         return r.text, node
 
@@ -140,21 +147,5 @@ class SoapClient(object):
         for i in root.iter(QName_E('ResponseCode')):
             if i is not None:
                 return (i.text, root)
-
-        return (None, root)
-
-    @staticmethod
-    def get_error_msg (soap_resp, root=None, code=None):
-        if root is not None:
-            root = SoapClient.parse_xml(soap_resp)
-
-        if code == 'ErrorSchemaValidation':
-            for i in root.iter('faultstring'):
-                if i is not None:
-                    return (i.text, root)
-        else:
-            for i in root.iter(QName_M('MessageText')):
-                if i is not None:
-                    return (i.text, root)
 
         return (None, root)

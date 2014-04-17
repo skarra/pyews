@@ -23,6 +23,7 @@
 ##
 
 import mapitags
+from   soap import SoapClient, SoapMessageError, QName_M
 
 ## perhaps this is not required?
 class WellKnownFolderName:
@@ -95,8 +96,28 @@ class PhoneKey:
     Telex            = 'Telex'
     TtyTddPhone      = 'TtyTddPhone'
 
-class EWSMessageError(Exception):
-    pass
+class EWSMessageError(SoapMessageError):
+    def __init__ (self, resp_code, xml_resp=None, node=None):
+        SoapMessageError.__init__(self, resp_code, xml_resp, node)
+        self.parse_error_msg()
+
+    def parse_error_msg (self):
+        if self.node is not None:
+            self.node = SoapClient.parse_xml(self.xml_resp)
+
+        if self.resp_code == 'ErrorSchemaValidation':
+            for i in self.node.iter('faultstring'):
+                if i is not None:
+                    self.msg_text = i.text
+        else:
+            for i in self.node.iter(QName_M('MessageText')):
+                if i is not None:
+                    self.msg_text = i.text
+
+        return None
+
+    def __str__ (self):
+        return '%s - %s' % (self.resp_code, self.msg_text)
 
 class EWSCreateFolderError(Exception):
     pass

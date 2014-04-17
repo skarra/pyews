@@ -38,8 +38,10 @@ def main ():
 
     root = bind()
     # test_create_folder(root)
+    # test_find_item(cons[0].itemid.text)
+
+    test_create_item(ews, root)
     cons = test_list_items(root)
-    test_find_item(cons[0].itemid.text)
 
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
@@ -69,6 +71,13 @@ def test_find_item (itemid):
         print 'WTF. Could not find itemid ', itemid
     else:
         print cons[0].to_xml()
+
+def test_create_item (ews, fid):
+    con = Contact(ews, fid)
+    con.complete_name.first_name.text = 'Sriram'
+    con.job_title.text = 'Sr. Product Manager'
+    con.company_name = 'Interviewstreet Pvt Ltd.'
+    ews.CreateItems([con])
 
 if __name__ == "__main__":
     main()
