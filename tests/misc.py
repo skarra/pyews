@@ -10,6 +10,7 @@ from   pyews.ews.data         import DistinguishedFolderId, WellKnownFolderName
 from   pyews.ews.data         import FolderClass
 from   pyews                  import utils
 from   pyews.ews.folder       import Folder
+from   pyews.ews.contact      import Contact
 
 def main ():
     logging.getLogger().setLevel(logging.DEBUG)
@@ -37,11 +38,15 @@ def main ():
     ews.init_soap_client()
 
     root = bind()
+    cfs = root.FindFolders(types=FolderClass.Contacts)
+
     # test_create_folder(root)
     # test_find_item(cons[0].itemid.text)
 
-    test_create_item(ews, root)
-    cons = test_list_items(root)
+    test_create_item(ews, cfs[0].Id)
+    # cons = test_list_items(cfs[0])
+
+    # test_find_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHWUFdwAA')
 
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
@@ -74,10 +79,13 @@ def test_find_item (itemid):
 
 def test_create_item (ews, fid):
     con = Contact(ews, fid)
-    con.complete_name.first_name.text = 'Sriram'
-    con.job_title.text = 'Sr. Product Manager'
-    con.company_name = 'Interviewstreet Pvt Ltd.'
-    ews.CreateItems([con])
+    con.complete_name.first_name.text = 'Rajmohan'
+    con.complete_name.given_name.text = con.complete_name.first_name.text
+    con.complete_name.surname.text = 'Singh'
+    con.complete_name.suffix = 'Jr.'
+    con.job_title.text = 'Governor'
+    con.company_name.text = 'Govt. of West Bengal'
+    ews.CreateItems(fid, [con])
 
 if __name__ == "__main__":
     main()

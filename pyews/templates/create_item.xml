@@ -1,0 +1,14 @@
+{% extends "base_request.xml" %}
+{% autoescape None %}
+{% block body %}
+    <m:CreateItem>
+      <m:SavedItemFolderId>
+        <t:FolderId Id="{{ folder_id }}"/>
+      </m:SavedItemFolderId>
+      <m:Items>
+        {% for item in items %}
+          {{ item.to_xml() }}
+        {% end %}
+      </m:Items>
+    </m:CreateItem>
+{% end %}

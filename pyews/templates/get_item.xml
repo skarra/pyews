@@ -5,8 +5,8 @@
         <m:ItemShape>
            <t:BaseShape>AllProperties</t:BaseShape>
            <t:AdditionalProperties>
-               <!-- We will always request some additional information. This -->
-               <!-- can be made a bit more efficient, but what the hell. -->
+               <!-- We will always request some additional information. -->
+               <!-- This can be made more efficient, but WTH -->
 
                <!-- Gender -->
                <t:ExtendedFieldURI

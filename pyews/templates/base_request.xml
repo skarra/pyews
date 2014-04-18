@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-{% from ews import mapitags as mt %}
-{% from ews.data import ews_pt as ews_pt %}
-{% from ews.data import ews_pid as ews_pid %}
+{% from pyews.ews import mapitags as mt %}
+{% from pyews.ews.data import ews_pt as ews_pt %}
+{% from pyews.ews.data import ews_pid as ews_pid %}
 {% autoescape None %}
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages" 
    xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
 

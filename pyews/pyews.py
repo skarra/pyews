@@ -21,7 +21,7 @@
 import logging, re
 
 import utils
-from   utils            import pretty_xml
+from   utils            import pretty_xml, clean_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
 from   ews.data         import FolderClass, EWSMessageError
@@ -170,6 +170,21 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:GetItems() - fetching items...done')
         return self._construct_items(resp, node)
+
+    def CreateItems (self, folder_id, items):
+        """Create items in the exchange store."""
+
+        logging.info('pimdb_ex:CreateItems() - creating items....')
+        req = self._render_template(utils.REQ_CREATE_ITEM,
+                                    folder_id=folder_id, items=items)
+        try:
+            req = clean_xml(req)
+            resp, node = self.send(req)
+            logging.debug('%s', pretty_xml(resp))
+        except SoapMessageError as e:
+            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
+
+        logging.info('pimdb_ex:CreateItems() - creating items....done')
 
     ##
     ## Some internal messages
