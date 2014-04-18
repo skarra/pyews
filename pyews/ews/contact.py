@@ -99,10 +99,9 @@ class CompleteName(Field):
         self.nickname     = self.Nickname()
         self.full_name    = self.FullName()
 
-        self.children = [self.title, self.given_name, self.first_name,
-                         self.middle_name, self.last_name, self.surname,
-                         self.suffix, self.initials, self.nickname,
-                         self.full_name]
+        self.children = [self.title, self.first_name, self.middle_name,
+                         self.last_name, self.suffix, self.initials,
+                         self.nickname]
 
 class SpouseName(Field):
     def __init__ (self, text=None):
@@ -281,11 +280,17 @@ class Contact(Item):
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
 
-        self.children = [self.file_as, self.alias, self.complete_name,
-                         self.display_name, self.spouse_name, self.job_title,
-                         self.company_name, self.department, self.manager,
-                         self.assistant_name, self.birthday, self.anniversary,
-                         self.notes, self.emails, self.phones]
+        cn = self.complete_name
+        ## Note that children is used for generating xml representation of
+        ## this contact for CreateItem and update operations. The order of
+        ## these fields is critical. I know, it's crazy.
+        self.children = [self.notes, self.file_as, self.display_name,
+                         cn.given_name, cn.initials,
+                         cn.middle_name, cn.nickname, self.company_name,
+                         self.emails, self.phones, self.assistant_name,
+                         self.birthday, self.department, self.job_title,
+                         self.manager, self.spouse_name, cn.surname,
+                         self.anniversary, self.alias, self.notes]
 
         self._init_from_resp()
 
@@ -450,6 +455,7 @@ class Contact(Item):
 ##       <YomiFirstName/>
 ##       <YomiLastName/>
 ##    </CompleteName>
+##    <CompanyName/>
 ##    <EmailAddresses/>
 ##    <PhysicalAddresses/>
 ##    <PhoneNumbers/>
