@@ -38,23 +38,16 @@ class Field:
         self.attrib.update({key: val})
 
     def to_xml (self):
-        print 'Tag: %s' % self.tag
-        print '  children: ', len(self.children)
-        print '  text: ', self.text
-
         if ((self.text is not None) or (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
-            cs =  '\n'.join([x.to_xml() for x in self.children])
+            xmls = [x.to_xml() for x in self.children]
+            cs =  '\n'.join([y for y in xmls if y is not None])
             text = self.text if self.text is not None else ''
 
-            ret =  '<t:%s %s>\n%s\n%s</t:%s>' % (self.tag, ' '.join(ats), cs,
-                                                text, self.tag)
-            print '=== Start'
-            print ret
-            print '=== Finish'
+            ret =  '<t:%s %s>%s%s</t:%s>' % (self.tag, ' '.join(ats), text, cs,
+                                             self.tag)
             return ret
         else:
-            print 'Empty'
             return ''
 
     def __str__ (self):
