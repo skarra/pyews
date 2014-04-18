@@ -168,7 +168,7 @@ class Folder:
     ##
 
     def __str__ (self):
-        s = 'Name: %s' % slef.DisplayName
+        s = 'Name: %s' % self.DisplayName
         s += '  ID                  : %s\n' % self.Id
         s += '  Parent Folder ID    : %s\n' % self.ParentFolderId
         s += '  Total Count         : %s\n' % self.TotalCount
