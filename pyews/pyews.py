@@ -89,7 +89,7 @@ class ExchangeService(object):
         try:
             resp, node = self.send(req)
         except SoapMessageError as e:
-            raise EWSCreateFolderError(str(e))
+            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
         logging.info('Sending folder create request to EWS...done')
         return Folder(self, resp)
@@ -109,7 +109,7 @@ class ExchangeService(object):
             resp, node = self.send(req)
             logging.info('pimdb_ex:DeleteFolder() - successfully deleted.')
         except SoapMessageError as e:
-            raise EWSDeleteFolderError(str(e))
+            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
         return resp
 
@@ -144,7 +144,7 @@ class ExchangeService(object):
                 if last == "true":
                     break
             except SoapMessageError as e:
-                raise EWSMessagError(e)
+                raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
             i += self.batch_size()
             ## just a safety net to avoid inifinite loops
@@ -166,7 +166,7 @@ class ExchangeService(object):
             resp, node = self.send(req)
             logging.debug('%s', pretty_xml(resp))
         except SoapMessageError as e:
-            raise EWSCreateFolderError(str(e))
+            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
         logging.info('pimdb_ex:GetItems() - fetching items...done')
         return self._construct_items(resp, node)
