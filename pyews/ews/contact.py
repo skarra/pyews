@@ -355,6 +355,12 @@ class Contact(Item):
         else:
             self._lastname = self.complete_name.surname.text
 
+        if self._firstname is None:
+            self._firstname = ''
+
+        if self._lastname is None:
+            self._lastname = ''
+
         if self.display_name.text:
             self._displayname = self.display_name.text
         elif self.complete_name.full_name.text:
