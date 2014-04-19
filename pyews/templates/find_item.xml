@@ -3,7 +3,7 @@
 {% block body %}
     <m:FindItem Traversal="Shallow">
       <m:ItemShape>
-        <t:BaseShape>AllProperties</t:BaseShape>
+        <t:BaseShape>IdOnly</t:BaseShape>
       </m:ItemShape>
       <m:IndexedPageItemView MaxEntriesReturned="{{ batch_size }}" 
 			     Offset="{{ offset }}"

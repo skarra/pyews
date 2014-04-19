@@ -116,15 +116,15 @@ class ExchangeService(object):
     def FindItems (self, folder):
         """
         Fetch all the items in the given folder.  folder is an object of type
-        ews.folder.Folder
+        ews.folder.Folder. This method will first find all the ItemIds of
+        contained items, then go back and fetch all the details for each of
+        the items in the folder. We return an array of Item objects of the
+        right type.
         """
 
-        logging.info('pimdb_ex:FindItems() - fetching items in folder %s',
+        logging.info('pimdb_ex:FindItems() - fetching items in folder %s...',
                      folder.DisplayName)
 
-        ## EWS does not allow to search by itemids. So what we will do is to
-        ## fetch all the items in the folder in batches, and just return the
-        ## items that exist in itemids array.
         i = 0
         ret = []
         while True:
@@ -136,10 +136,9 @@ class ExchangeService(object):
                 resp, node = self.send(req)
                 last, ign = gna(resp, node, 'RootFolder',
                                 'IncludesLastItemInRange')
-                items = self._construct_items(resp, node)
-
-                if items is not None:
-                    ret += items
+                shells = self._construct_items(resp, node)
+                if shells is not None and len(shells) > 0:
+                    ret += shells
 
                 if last == "true":
                     break
@@ -152,12 +151,21 @@ class ExchangeService(object):
                 logging.warning('pimdb_ex.FindItems(): Breaking strange loop')
                 break
 
-        return ret
+        logging.info('pimdb_ex:FindItems() - fetching items in folder %s...done',
+                     folder.DisplayName)
+
+        if len(ret) > 0:
+            return self.GetItems([x.itemid for x in ret])
+        else:
+            return ret
 
     def GetItems (self, itemids):
         """
         itemids is an array of itemids, and we will fetch that stuff and
         return an array of Item objects.
+
+        FIXME: Need to make this work in batches to ensure data is not too
+        much.
         """
 
         logging.info('pimdb_ex:GetItems() - fetching items....')
