@@ -280,18 +280,6 @@ class Contact(Item):
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
 
-        cn = self.complete_name
-        ## Note that children is used for generating xml representation of
-        ## this contact for CreateItem and update operations. The order of
-        ## these fields is critical. I know, it's crazy.
-        self.children = [self.notes, self.file_as, self.display_name,
-                         cn.given_name, cn.initials,
-                         cn.middle_name, cn.nickname, self.company_name,
-                         self.emails, self.phones, self.assistant_name,
-                         self.birthday, self.department, self.job_title,
-                         self.manager, self.spouse_name, cn.surname,
-                         self.anniversary, self.alias, self.notes]
-
         self._init_from_resp()
 
     def _init_from_resp (self):
@@ -383,6 +371,24 @@ class Contact(Item):
         ## to be dealt with as extended properties.
         ## - gender
         ## - LastModifiedTime
+
+    def get_children (self):
+        cn = self.complete_name
+        ## Note that children is used for generating xml representation of
+        ## this contact for CreateItem and update operations. The order of
+        ## these fields is critical. I know, it's crazy.
+        self.children = [self.notes, self.file_as, self.display_name,
+                         cn.given_name, cn.initials,
+                         cn.middle_name, cn.nickname, self.company_name,
+                         self.emails, self.phones, self.assistant_name,
+                         self.birthday, self.department, self.job_title,
+                         self.manager, self.spouse_name, cn.surname,
+                         self.anniversary, self.alias, self.notes]
+
+        return self.children
+
+    def save (self):
+        self.service.CreateItems(self.ParentFolderId, [self])
 
     def __str__ (self):
         s  = 'ItemId: %s' % self.itemid

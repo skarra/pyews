@@ -23,7 +23,7 @@
 ##
 
 import mapitags
-from   soap import SoapClient, SoapMessageError, QName_M
+from   pyews.soap import SoapClient, SoapMessageError, QName_M
 
 ## perhaps this is not required?
 class WellKnownFolderName:

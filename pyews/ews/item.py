@@ -38,6 +38,8 @@ class Field:
         self.attrib.update({key: val})
 
     def to_xml (self):
+        self.children = self.get_children()
+
         if ((self.text is not None) or (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
             xmls = [x.to_xml() for x in self.children]
@@ -49,6 +51,9 @@ class Field:
             return ret
         else:
             return ''
+
+    def get_children (self):
+        return self.children
 
     def __str__ (self):
         return self.text if self.text is not None else ""
