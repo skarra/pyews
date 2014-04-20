@@ -17,9 +17,13 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-from item    import Item, Field
-from pyews.soap    import SoapClient, unQName
+from item    import Item, Field, ExtendedProperty, LastModificationTime
+from item    import PropVariant
+from pyews.soap    import SoapClient, unQName, QName_T
 from pyews.utils   import pretty_xml
+from pyews.ews     import mapitags
+from pyews.ews.data import MapiPropertyTypeType, MapiPropertyTypeTypeInv
+from pyews.ews.data import GenderType
 
 gnd = SoapClient.get_node_detail
 
@@ -219,38 +223,27 @@ class PhoneNumbers(Field):
     def __repr__ (self):
         return self.__str__()
 
-class ExtendedProperty:
-    def __init__ (self):
-        ## if self.dis_guid is used guid and prop_tag cannot be used
-        self.dis_guid = None
+##
+## Extended Properties
+##
 
-        self.guid = None
-        self.prog_tag = None
-        self.prop_id = None
-        self.prop_type = None
+class Gender(ExtendedProperty):
+    def __init__ (self, node=None, text=GenderType.Unspecified):
+        ptag  = mapitags.PROP_ID(mapitags.PR_GENDER)
+        ptype = mapitags.PROP_TYPE(mapitags.PR_GENDER)
+        ExtendedProperty.__init__(self, node=node, ptag=ptag,
+                                  ptype=MapiPropertyTypeType[ptype])
 
-        self.prop_name = None
-        self.prop_value = None
-
-    def init_from_xml (self, node):
-        """
-        None is a parsed xml node (Element). Extract the data that we can
-        from the node.
-        """
-
-        uri = node.find(QName_T('ExtendedFieldURI'))
-        if uri is None:
-            logging.debug('ExtendedProperty.init_from_xml(): no child node ' +
-                          'ExtendedFieldURI in node: %s', pretty_xml(node))
-
-        self.dis_guid = uri.attrib['DistinguishedPropertySetId']
-        self.guid = uri.attrib['PropertySetId']
-        self.prop_tag = uri.attrib['PropertyTag']
-        self.prop_id = uri.attrib['PropertyId']
-        self.prop_name = uri.attrib['PropertyName']
-        self.prop_type = uri.attrib['PropertyString']
-
-        self.prop_value = node.find(QName_T('Value')).text
+    def __str__ (self):
+        v = self.value.text
+        if v is None:
+            return None
+        elif int(v) == GenderType.Female:
+            return 'Female'
+        elif int(v) == GenderType.Male:
+            return 'Male'
+        else:
+            return None
 
 class Contact(Item):
     """
@@ -279,6 +272,11 @@ class Contact(Item):
         self.notes = Notes()
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
+
+        self.eprops = []
+        self.eprops_tagged = {}
+
+        self.gender = Gender()
 
         self._init_from_resp()
 
@@ -326,6 +324,8 @@ class Contact(Item):
                 self.emails.populate_from_node(child)
             elif tag == 'PhoneNumbers':
                 self.phones.populate_from_node(child)
+            elif tag == 'ExtendedProperty':
+                self.add_extended_property(node=child)
 
         n = rnode.find('CompleteName')
         if n is not None:
@@ -383,8 +383,8 @@ class Contact(Item):
         ## Note that children is used for generating xml representation of
         ## this contact for CreateItem and update operations. The order of
         ## these fields is critical. I know, it's crazy.
-        self.children = [self.notes, self.file_as, self.display_name,
-                         cn.given_name, cn.initials,
+        self.children = [self.notes] + self.eprops + [self.gender, self.file_as,
+                         self.display_name, cn.given_name, cn.initials,
                          cn.middle_name, cn.nickname, self.company_name,
                          self.emails, self.phones, self.assistant_name,
                          self.birthday, self.department, self.job_title,
@@ -393,13 +393,46 @@ class Contact(Item):
 
         return self.children
 
+    def add_extended_property (self, node):
+        uri = node.find(QName_T('ExtendedFieldURI'))
+        if uri is None:
+            logging.error('ExtendedProperty.init_from_xml(): no child node ' +
+                          'ExtendedFieldURI in node: %s',
+                          pretty_xml(node))
+            return
+
+        ## Look for known extended properties
+        is_tp, tag = ExtendedProperty.is_tagged_prop(uri)
+        if is_tp:
+            self.add_tagged_property(tag, node)
+        else:
+            self.eprops.append(ExtendedProperty(node=node))
+
+    def add_tagged_property (self, tag, node):
+        eprop = None
+        if tag == mapitags.PR_LAST_MODIFICATION_TIME:
+            self.last_modified_time = LastModificationTime(node=node)
+            eprop = self.last_modified_time
+        elif tag == mapitags.PR_GENDER:
+            self.gender = Gender(node=node)
+            eprop = self.gender
+        else:
+            eprop = ExtendedProperty(node=node)
+            self.eprops.append(eprop)
+            self.eprops_tagged[tag] = eprop
+
     def save (self):
         self.service.CreateItems(self.ParentFolderId, [self])
 
     def __str__ (self):
+        lmt_tag = mapitags.PR_LAST_MODIFICATION_TIME
+
         s  = 'ItemId: %s' % self.itemid
         s += '\nCreated: %s' % self.created_time
+        if lmt_tag in self.eprops_tagged:
+            s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].value.text
         s += '\nName: %s' % self._displayname
+        s += '\nGEnder: %s' % self.gender
         s += '\nPhones: %s' % self.phones
         s += '\nEmails: %s' % self.emails
         s += '\nNotes: %s' % self.notes

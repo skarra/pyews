@@ -21,7 +21,9 @@ from         abc     import ABCMeta, abstractmethod
 from         pyews.soap    import SoapClient, QName_M, QName_T, unQName
 import       pyews.soap as soap
 import       pyews.utils as utils
+from pyews.ews     import mapitags
 import       xml.etree.ElementTree as ET
+from pyews.ews.data import MapiPropertyTypeType, MapiPropertyTypeTypeInv
 
 gnd = SoapClient.get_node_detail
 
@@ -51,6 +53,7 @@ class Field:
         self.text = text
         self.attrib = {}
         self.children = []
+        self.read_only = False
 
     def add_attrib (self, key, val):
         self.attrib.update({key: val})
@@ -58,7 +61,9 @@ class Field:
     def to_xml (self):
         self.children = self.get_children()
 
-        if ((self.text is not None) or (len(self.children) > 0)):
+        if ((self.text is not None) or
+            (len(self.attrib) > 0) or
+            (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
             xmls = [x.to_xml() for x in self.children]
             cs =  '\n'.join([y for y in xmls if y is not None])
@@ -72,6 +77,9 @@ class Field:
 
     def get_children (self):
         return self.children
+
+    def set (self, value):
+        self.text = value
 
     def __str__ (self):
         return self.text if self.text is not None else ""
@@ -97,14 +105,146 @@ class ItemClass(Field):
     def __init__ (self, text=None):
         Field.__init__(self, 'ItemClass', text)
  
-## This might not be so easy...
-class LastModifiedTime(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, 'LastModifiedTime', text)
-
 class DateTimeCreated(Field):
     def __init__ (self, text=None):
         Field.__init__(self, 'DateTimeCreated', text)
+
+class PropVariant:
+    UNKNOWN   = 0
+    TAGGED    = 1
+    NAMED_NUM = 2
+    NAMED_STR = 3
+
+class ExtendedProperty(Field):
+    class ExtendedFieldURI(Field):
+        def __init__ (self, node=None, dis_psetid=None, psetid=None,
+                      ptag=None, pname=None, pid=None, ptype=None):
+            Field.__init__(self, 'ExtendedFieldURI')
+
+            ## See here for explanation of each of these and what the
+            ## constraints are for mixing and matchig these fields.
+            ## http://msdn.microsoft.com/en-us/library/office/aa564843.aspx
+
+            ## Note - All of these values will be strings (if not None)
+            self.attrib = {
+                'DistinguishedPropertySetId' : dis_psetid,
+                'PropertySetId'  : psetid,
+                'PropertyTag'    : ptag,
+                'PropertyName'   : pname,
+                'PropertyId'     : pid,
+                'PropertyType'   : ptype,
+            }
+
+            if node is not None:
+                self.init_from_xml(node)
+
+        def init_from_xml (self, node):
+            """
+            None is a parsed xml node (Element). Extract the data that we can
+            from the node.
+            """
+
+            uri = node.find(QName_T('ExtendedFieldURI'))
+            if uri is None:
+                logging.debug('ExtendedProperty.init_from_xml(): no child node ' +
+                              'ExtendedFieldURI in node: %s',
+                              pretty_xml(node))
+            else :
+                self.attrib.update(uri.attrib)
+
+    class Value(Field):
+        def __init__ (self, text=None):
+            Field.__init__(self, 'Value')
+
+    def __init__ (self, node=None, dis_psetid=None, psetid=None,
+                      ptag=None, pname=None, pid=None, ptype=None):
+        """
+        If node is not None, it should be a parsed XML element pointing to an
+        Extended Property element
+        """
+
+        Field.__init__(self, 'ExtendedProperty')
+        self.efuri = self.ExtendedFieldURI(node, dis_psetid, psetid,
+                      ptag, pname, pid, ptype)
+
+        ## FIXME: We can have a multi-valued property as well.
+        self.value = self.Value()
+        if node is not None:
+            self.value.text = node.find(QName_T('Value')).text
+
+        self.children = [self.efuri, self.value]
+
+    def get_variant (self):
+        """
+        Outlook has three types of properties - Tagged Properties, Named
+        Properites with Numeric Identifiers, and Named Properties with
+        string identifiers. This method will identify which variant this
+        property is. It will return one of the values defined in the
+        PropVariant class above.
+        """
+
+        all_none = True
+        for v in self.efuri.attrib.values():
+            if v is not None:
+                all_none = False
+                break
+        if all_none:
+            return PropVariant.UNKNOWN
+
+        if (self.efuri.attrib['PropertyTag'] is not None
+            and self.efuri.attrib['PropertyType'] is not None
+            and self.efuri.attrib['PropertySetId'] is None
+            and self.efuri.attrib['DistinguishedPropertySetId'] is None
+            and self.efuri.attrib['PropertyId'] is None):
+            return PropVariant.TAGGED
+
+        ## FIXME: Support checks for the other variants.
+        return PropVariant.UNKNOWN
+
+    def get_prop_tag (self):
+        """Return a tag version of the current property. Note that the
+        name tag is used in different ways by MS in different places. Here
+        we are talking about the combined property_tag and property_type
+        entity."""
+
+        pt = self.efuri.attrib['PropertyTag']
+        base = 16 if pt[0:2] == "0x" else 10
+        pid = int(pt, base)
+        ptype = int(MapiPropertyTypeTypeInv[self.efuri.attrib['PropertyType']])
+
+        return mapitags.PROP_TAG(ptype, pid)
+
+    def set (self, value):
+        self.value.set(value)
+
+    ##
+    ## Some helper methods to easily "recognize" the extended properties
+    ##
+
+    @staticmethod
+    def is_tagged_prop (xml_node):
+        """
+        If the element is a tagged property then returns (True, MAPITag)
+        otherwise it will be (False, ignore)
+        """
+        tp = (len(xml_node.attrib) == 2 and
+              'PropertyTag' in xml_node.attrib and
+              'PropertyType' in xml_node.attrib)
+
+        if tp:
+            pid   = utils.safe_int(xml_node.attrib['PropertyTag'])
+            ptype = xml_node.attrib['PropertyType']
+            tag = mapitags.PROP_TAG(MapiPropertyTypeTypeInv[ptype], pid)
+
+            return (True, tag)
+        else:
+            return (False, 0)
+
+class LastModificationTime(ReadOnly, ExtendedProperty):
+    def __init__ (self, node=None, text=None):
+        ptag  = mapitags.PROP_ID(mapitags.PR_LAST_MODIFICATION_TIME)
+        ptype = mapitags.PROP_TYPE(mapitags.PR_LAST_MODIFICATION_TIME)
+        ExtendedProperty.__init__(self, node=node, ptag=ptag, ptype=ptype)
 
 class Item(Field):
     """
