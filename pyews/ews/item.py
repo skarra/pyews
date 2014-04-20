@@ -25,6 +25,24 @@ import       xml.etree.ElementTree as ET
 
 gnd = SoapClient.get_node_detail
 
+class ReadOnly:
+    """
+    When applied as a Mixin, this class will ensure that no XML is generated
+    when this field is written out as part of the containing Item. Usage for
+    this:
+
+    class LastModifiedTime(ReadOnly, ExtendedProperty):
+        pass
+
+    Note that for this to work in python (given the rules of method resolution
+    order for multiple inheritance, the ReadOnly Mixin should come to the left
+    of Field class or any its derived classes.
+    """
+    __metaclass__ = ABCMeta
+
+    def to_xml (self):
+        return ''
+
 class Field:
     __metaclass__ = ABCMeta
 
