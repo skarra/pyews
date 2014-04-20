@@ -33,3 +33,14 @@ def clean_xml (x):
 
     resp = ''.join(resp)
     return pretty_xml(resp)
+
+def safe_int (s):
+    """Convert string s into an integer taking into account if s is a hex
+    representaiton with a leading 0x."""
+
+    if s[0:2] == '0x':
+        return int(s, 16)
+    elif s[0:1] == '0':
+        return int(s, 8)
+    else:
+        return int(s, 10)
