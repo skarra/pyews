@@ -7,7 +7,7 @@ sys.path.append("../pyews")
 from   pyews.pyews            import WebCredentials, ExchangeService
 from   pyews.ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   pyews.ews.data         import DistinguishedFolderId, WellKnownFolderName
-from   pyews.ews.data         import FolderClass
+from   pyews.ews.data         import FolderClass, GenderType
 from   pyews                  import utils
 from   pyews.ews.folder       import Folder
 from   pyews.ews.contact      import Contact
@@ -43,10 +43,10 @@ def main ():
     # test_create_folder(root)
     # test_find_item(cons[0].itemid.text)
 
-    test_create_item(ews, cfs[0].Id)
+    # test_create_item(ews, cfs[0].Id)
     # cons = test_list_items(cfs[0])
 
-    # test_find_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHWUFdwAA')
+    test_find_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA')
 
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
@@ -75,16 +75,17 @@ def test_find_item (itemid):
     if cons is None or len(cons) <= 0:
         print 'WTF. Could not find itemid ', itemid
     else:
-        print cons[0].to_xml()
+        print cons[0]
 
 def test_create_item (ews, fid):
     con = Contact(ews, fid)
-    con.complete_name.first_name.text = 'Rajmohan'
+    con.complete_name.first_name.text = 'Mamata'
     con.complete_name.given_name.text = con.complete_name.first_name.text
-    con.complete_name.surname.text = 'Singh'
+    con.complete_name.surname.text = 'Banerjee'
     con.complete_name.suffix = 'Jr.'
-    con.job_title.text = 'Governor'
+    con.job_title.text = 'Chief Minister'
     con.company_name.text = 'Govt. of West Bengal'
+    con.gender.set(GenderType.Female)
     ews.CreateItems(fid, [con])
 
 if __name__ == "__main__":
