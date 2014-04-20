@@ -74,7 +74,6 @@ class ItemClass:
     Note = 'IPM.Note'
     Task = 'IPM.Task'
 
-
 class PhoneKey:
     AssistantPhone   = 'AssistantPhone'
     BusinessFax      = 'BusinessFax'
@@ -95,6 +94,11 @@ class PhoneKey:
     RadioPhone       = 'RadioPhone'
     Telex            = 'Telex'
     TtyTddPhone      = 'TtyTddPhone'
+
+class GenderType:
+    Unspecified = 0x0001
+    Female      = 0x0002
+    Male        = 0x0003
 
 class EWSMessageError(SoapMessageError):
     def __init__ (self, resp_code, xml_resp=None, node=None):
@@ -126,7 +130,7 @@ class EWSDeleteFolderError(Exception):
     pass
 
 MapiPropertyTypeType = {
-    mapitags.PT_UNSPECIFIED : "Null",
+    mapitags.PT_UNSPECIFIED : "Unspecified",
     mapitags.PT_NULL        : "Null",
     mapitags.PT_I2          : "Short",
     mapitags.PT_LONG        : "Integer",
@@ -146,6 +150,10 @@ MapiPropertyTypeType = {
 
     ## Need to support the Array types
     }
+
+MapiPropertyTypeTypeInv = {}
+for k, v in MapiPropertyTypeType.iteritems():
+    MapiPropertyTypeTypeInv[v] = k
 
 def ews_pt (tag):
     """Return the EWS Property Type enumeration for the specific MAPI Property
