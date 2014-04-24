@@ -157,7 +157,7 @@ class EmailAddresses(Field):
                 }
 
         def __str__ (self):
-            return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.text)
+            return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.value)
 
         def __repr__ (self):
             return self.__str__()
@@ -174,7 +174,7 @@ class EmailAddresses(Field):
             for k, v in child.attrib.iteritems():
                 email.add_attrib(k, v)
 
-            email.text = child.text
+            email.value = child.text
             self.entries.append(email)
 
     def __str__ (self):
@@ -194,7 +194,7 @@ class PhoneNumbers(Field):
                 }
 
         def __str__ (self):
-            return 'Key: %8s  Number: %s' % (self.attrib['Key'], self.text)
+            return 'Key: %8s  Number: %s' % (self.attrib['Key'], self.value)
 
         def __repr__ (self):
             return self.__str__()
@@ -212,7 +212,7 @@ class PhoneNumbers(Field):
             for k, v in child.attrib.iteritems():
                 phone.add_attrib(k, v)
 
-            phone.text = child.text
+            phone.value = child.text
             self.entries.append(phone)
 
     def __str__ (self):
@@ -235,7 +235,7 @@ class Gender(ExtendedProperty):
                                   ptype=MapiPropertyTypeType[ptype])
 
     def __str__ (self):
-        v = self.value.text
+        v = self.value.value
         if v is None:
             return 'Unspecified'
         elif int(v) == GenderType.Female:
@@ -286,37 +286,37 @@ class Contact(Item):
             tag = unQName(child.tag)
 
             if tag == 'FileAs':
-                self.file_as.text = child.text
+                self.file_as.value = child.text
             elif tag == 'Alias':
-                self.alias.text = child.text
+                self.alias.value = child.text
             elif tag == 'SpouseName':
-                self.spouse_nam.text = child.text
+                self.spouse_nam.value = child.text
             elif tag == 'JobTitle':
-                self.job_title.text = child.text
+                self.job_title.value = child.text
             elif tag == 'CompanyName':
-                self.company_name.text = child.text
+                self.company_name.value = child.text
             elif tag == 'Department':
-                self.department.text = child.text
+                self.department.value = child.text
             elif tag == 'Manager':
-                self.manager.text = child.text
+                self.manager.value = child.text
             elif tag == 'AssistantName':
-                self.assistant_name.text = child.text
+                self.assistant_name.value = child.text
             elif tag == 'Birthday':
-                self.birthday.text = child.text
+                self.birthday.value = child.text
             elif tag == 'WeddingAnniversary':
-                self.anniversary.text = child.text
+                self.anniversary.value = child.text
             elif tag == 'GivenName':
-                self.complete_name.given_name.text = child.text
+                self.complete_name.given_name.value = child.text
             elif tag == 'Surname':
-                self.complete_name.surname.text = child.text
+                self.complete_name.surname.value = child.text
             elif tag == 'Initials':
-                self.complete_name.initials.text = child.text
+                self.complete_name.initials.value = child.text
             elif tag == 'DisplayName':
-                self.display_name.text = child.text
+                self.display_name.value = child.text
             elif tag == 'Body':
                 ## FIXME: We are assuming a text body type, but they could
                 ## contain html or other types as well... Oh, well.
-                self.notes.text = child.text
+                self.notes.value = child.text
             elif tag == 'EmailAddresses':
                 self.emails.populate_from_node(child)
             elif tag == 'PhoneNumbers':
@@ -330,27 +330,27 @@ class Contact(Item):
             rnode = n
 
         fts = self._find_text_safely
-        self.complete_name.title.text = fts(rnode, 'Title')
-        self.complete_name.first_name.text = fts(rnode, 'FirstName')
-        self.complete_name.middle_name.text = fts(rnode, 'MiddleName')
-        self.complete_name.last_name.text = fts(rnode, 'LastName')
-        self.complete_name.suffix.text = fts(rnode, 'Suffix')
-        self.complete_name.initials.text = fts(rnode, 'Initials')
-        self.complete_name.full_name.text = fts(rnode, 'FullName')
-        self.complete_name.nickname.text = fts(rnode, 'Nickname')
+        self.complete_name.title.value = fts(rnode, 'Title')
+        self.complete_name.first_name.value = fts(rnode, 'FirstName')
+        self.complete_name.middle_name.value = fts(rnode, 'MiddleName')
+        self.complete_name.last_name.value = fts(rnode, 'LastName')
+        self.complete_name.suffix.value = fts(rnode, 'Suffix')
+        self.complete_name.initials.value = fts(rnode, 'Initials')
+        self.complete_name.full_name.value = fts(rnode, 'FullName')
+        self.complete_name.nickname.value = fts(rnode, 'Nickname')
 
         ## It's a bit hard to understand why the hell they have so many
         ## variants for the same stupid information... Oh well, let's just
         ## have a few handy shortcuts for the information that matters
-        if self.complete_name.first_name.text:
-            self._firstname = self.complete_name.first_name.text
+        if self.complete_name.first_name.value:
+            self._firstname = self.complete_name.first_name.value
         else:
-            self._firstname = self.complete_name.given_name.text
+            self._firstname = self.complete_name.given_name.value
 
-        if self.complete_name.last_name.text:
-            self._lastname = self.complete_name.last_name.text
+        if self.complete_name.last_name.value:
+            self._lastname = self.complete_name.last_name.value
         else:
-            self._lastname = self.complete_name.surname.text
+            self._lastname = self.complete_name.surname.value
 
         if self._firstname is None:
             self._firstname = ''
@@ -358,10 +358,10 @@ class Contact(Item):
         if self._lastname is None:
             self._lastname = ''
 
-        if self.display_name.text:
-            self._displayname = self.display_name.text
-        elif self.complete_name.full_name.text:
-            self._displayname = self.complete_name.full_name.text
+        if self.display_name.value:
+            self._displayname = self.display_name.value
+        elif self.complete_name.full_name.value:
+            self._displayname = self.complete_name.full_name.value
         else:
             self._displayname = self._firstname + ' ' + self._lastname
 
@@ -428,7 +428,7 @@ class Contact(Item):
         s  = 'ItemId: %s' % self.itemid
         s += '\nCreated: %s' % self.created_time
         if lmt_tag in self.eprops_tagged:
-            s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].value.text
+            s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].value.value
         s += '\nName: %s' % self._displayname
         s += '\nGEnder: %s' % self.gender
         s += '\nPhones: %s' % self.phones

@@ -53,24 +53,32 @@ class Field:
 
     def __init__ (self, tag=None, text=None):
         self.tag = tag
-        self.text = text
+        self.value = text
         self.attrib = {}
         self.children = []
         self.read_only = False
 
+    @property
+    def value (self):
+        return self._value
+
+    @value.setter
+    def value (self, val):
+        self._value = val
+        
     def add_attrib (self, key, val):
         self.attrib.update({key: val})
 
     def write_to_xml (self):
         self.children = self.get_children()
 
-        if ((self.text is not None) or
+        if ((self.value is not None) or
             (len(self.attrib) > 0) or
             (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
             xmls = [x.write_to_xml() for x in self.children]
             cs =  '\n'.join([y for y in xmls if y is not None])
-            text = self.text if self.text is not None else ''
+            text = self.value if self.value is not None else ''
 
             ret =  '<t:%s %s>%s%s</t:%s>' % (self.tag, ' '.join(ats), text, cs,
                                              self.tag)
@@ -82,10 +90,10 @@ class Field:
         return self.children
 
     def set (self, value):
-        self.text = value
+        self.value = value
 
     def __str__ (self):
-        return self.text if self.text is not None else ""
+        return self.value if self.value is not None else ""
 
 class ItemId(Field):
     def __init__ (self, text=None):
@@ -173,7 +181,7 @@ class ExtendedProperty(Field):
         ## FIXME: We can have a multi-valued property as well.
         self.value = self.Value()
         if node is not None:
-            self.value.text = node.find(QName_T('Value')).text
+            self.value.value = node.find(QName_T('Value')).text
 
         self.children = [self.efuri, self.value]
 
@@ -315,7 +323,7 @@ class Item(Field):
 
     def _find_text_safely (self, elem, node):
         r = elem.find(node)
-        return r.text if r else None
+        return r.value if r else None
 
     def _init_base_fields_from_resp (self, rnode):
         """Return a reference to the parsed Element object for response after
