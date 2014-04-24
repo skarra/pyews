@@ -273,9 +273,6 @@ class Contact(Item):
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
 
-        self.eprops = []
-        self.eprops_tagged = {}
-
         self.gender = Gender()
 
         self._init_from_resp()
@@ -378,21 +375,6 @@ class Contact(Item):
         ## - gender
         ## - LastModifiedTime
 
-    def get_children (self):
-        cn = self.complete_name
-        ## Note that children is used for generating xml representation of
-        ## this contact for CreateItem and update operations. The order of
-        ## these fields is critical. I know, it's crazy.
-        self.children = [self.notes] + self.eprops + [self.gender, self.file_as,
-                         self.display_name, cn.given_name, cn.initials,
-                         cn.middle_name, cn.nickname, self.company_name,
-                         self.emails, self.phones, self.assistant_name,
-                         self.birthday, self.department, self.job_title,
-                         self.manager, self.spouse_name, cn.surname,
-                         self.anniversary, self.alias, self.notes]
-
-        return self.children
-
     def add_extended_property (self, node):
         uri = node.find(QName_T('ExtendedFieldURI'))
         if uri is None:
@@ -420,6 +402,22 @@ class Contact(Item):
             eprop = ExtendedProperty(node=node)
             self.eprops.append(eprop)
             self.eprops_tagged[tag] = eprop
+
+    ## Override Field.get_chidren to refresh the children array every time
+    def get_children (self):
+        cn = self.complete_name
+        ## Note that children is used for generating xml representation of
+        ## this contact for CreateItem and update operations. The order of
+        ## these fields is critical. I know, it's crazy.
+        self.children = [self.notes] + self.eprops + [self.gender, self.file_as,
+                         self.display_name, cn.given_name, cn.initials,
+                         cn.middle_name, cn.nickname, self.company_name,
+                         self.emails, self.phones, self.assistant_name,
+                         self.birthday, self.department, self.job_title,
+                         self.manager, self.spouse_name, cn.surname,
+                         self.anniversary, self.alias, self.notes]
+
+        return self.children
 
     def save (self):
         self.service.CreateItems(self.ParentFolderId, [self])

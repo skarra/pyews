@@ -42,10 +42,13 @@ class ReadOnly:
     """
     __metaclass__ = ABCMeta
 
-    def to_xml (self):
+    def write_to_xml (self):
         return ''
 
 class Field:
+    """
+    Represents an XML Element
+    """
     __metaclass__ = ABCMeta
 
     def __init__ (self, tag=None, text=None):
@@ -58,14 +61,14 @@ class Field:
     def add_attrib (self, key, val):
         self.attrib.update({key: val})
 
-    def to_xml (self):
+    def write_to_xml (self):
         self.children = self.get_children()
 
         if ((self.text is not None) or
             (len(self.attrib) > 0) or
             (len(self.children) > 0)):
             ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
-            xmls = [x.to_xml() for x in self.children]
+            xmls = [x.write_to_xml() for x in self.children]
             cs =  '\n'.join([y for y in xmls if y is not None])
             text = self.text if self.text is not None else ''
 
@@ -261,8 +264,34 @@ class Item(Field):
         self.service = service                       # Exchange service object
         self.resp_node = resp_node
 
+        self.eprops = []
+        self.eprops_tagged = {}
+
         if self.resp_node is not None:
             self._init_base_fields_from_resp(resp_node)
+
+    ##
+    ## First the abstract methods that will be implementd by sub classes
+    ##
+
+    @abstractmethod
+    def add_extended_property (self, node):
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_tagged_property (self, tag, node):
+        raise NotImplementedError
+
+    ##
+    ## Next, the non-abstract external methods
+    ##
+
+    def get_extended_properties (self):
+        return self.eprops
+
+    ##
+    ## Finally, some internal methods and helper functions
+    ##
 
     def _find_text_safely (self, elem, node):
         r = elem.find(node)

@@ -7,7 +7,7 @@
       </m:SavedItemFolderId>
       <m:Items>
         {% for item in items %}
-          {{ item.to_xml() }}
+          {{ item.write_to_xml() }}
         {% end %}
       </m:Items>
     </m:CreateItem>
