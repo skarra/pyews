@@ -17,7 +17,7 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-from item    import Item, Field, ExtendedProperty, LastModificationTime
+from item    import Item, Field, ExtendedProperty, LastModifiedTime
 from item    import PropVariant
 from pyews.soap    import SoapClient, unQName, QName_T
 from pyews.utils   import pretty_xml
@@ -144,6 +144,10 @@ class WeddingAnniversary(Field):
 class Notes(Field):
     def __init__ (self, text=None):
         Field.__init__(self, 'Body', text)
+        self.attrib = {
+            'BodyType' : 'Text',
+            # 'IsTruncated' : 'False'
+            }
 
 class EmailAddresses(Field):
     class Email(Field):
@@ -246,6 +250,12 @@ class Gender(ExtendedProperty):
         ExtendedProperty.__init__(self, node=node, ptag=ptag,
                                   ptype=MapiPropertyTypeType[ptype])
 
+    def write_to_xml (self):
+        if self.value.value is not None:
+            return ExtendedProperty.write_to_xml(self)
+        else:
+            return ''
+
     def __str__ (self):
         v = self.value.value
         if v is None:
@@ -338,7 +348,6 @@ class Contact(Item):
 
         n = rnode.find('CompleteName')
         if n is not None:
-            print 'Yo, ma =========================='
             rnode = n
 
         fts = self._find_text_safely
@@ -405,7 +414,7 @@ class Contact(Item):
     def add_tagged_property (self, tag, node):
         eprop = None
         if tag == mapitags.PR_LAST_MODIFICATION_TIME:
-            self.last_modified_time = LastModificationTime(node=node)
+            self.last_modified_time = LastModifiedTime(node=node)
             eprop = self.last_modified_time
         elif tag == mapitags.PR_GENDER:
             self.gender = Gender(node=node)
@@ -427,12 +436,12 @@ class Contact(Item):
                          self.emails, self.phones, self.assistant_name,
                          self.birthday, self.department, self.job_title,
                          self.manager, self.spouse_name, cn.surname,
-                         self.anniversary, self.alias, self.notes]
+                         self.anniversary, self.alias]
 
         return self.children
 
     def save (self):
-        self.service.CreateItems(self.ParentFolderId, [self])
+        self.service.CreateItems(self.parent_fid.value, [self])
 
     def __str__ (self):
         lmt_tag = mapitags.PR_LAST_MODIFICATION_TIME

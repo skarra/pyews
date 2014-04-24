@@ -70,6 +70,10 @@ class Field:
         self.attrib.update({key: val})
 
     def write_to_xml (self):
+        """
+        Return an XML representation of this field.
+        """
+
         self.children = self.get_children()
 
         if ((self.value is not None) or
@@ -251,7 +255,7 @@ class ExtendedProperty(Field):
         else:
             return (False, 0)
 
-class LastModificationTime(ReadOnly, ExtendedProperty):
+class LastModifiedTime(ReadOnly, ExtendedProperty):
     def __init__ (self, node=None, text=None):
         ptag  = mapitags.PROP_ID(mapitags.PR_LAST_MODIFICATION_TIME)
         ptype = mapitags.PROP_TYPE(mapitags.PR_LAST_MODIFICATION_TIME)
@@ -275,10 +279,10 @@ class Item(Field):
         self.parent_fck = None
 
         ## Now initialize some of the properties to default values
-        self.itemid = None
-        self.item_class = None
-        self.change_key = None
-        self.created_time = None
+        self.itemid = ItemId()
+        self.item_class = ItemClass()
+        self.change_key = ChangeKey()
+        self.created_time = DateTimeCreated()
         self.last_modified_time = None
 
         self.eprops = []
