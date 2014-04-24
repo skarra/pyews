@@ -237,13 +237,13 @@ class Gender(ExtendedProperty):
     def __str__ (self):
         v = self.value.text
         if v is None:
-            return None
+            return 'Unspecified'
         elif int(v) == GenderType.Female:
             return 'Female'
         elif int(v) == GenderType.Male:
             return 'Male'
         else:
-            return None
+            return 'Unspecified'
 
 class Contact(Item):
     """
