@@ -260,9 +260,18 @@ class Item(Field):
     def __init__ (self, service, parent_fid=None, resp_node=None, tag='Item'):
         Field.__init__(self, tag=tag)
 
-        self.ParentFolderId = parent_fid             # folder object
         self.service = service                       # Exchange service object
         self.resp_node = resp_node
+
+        self.parent_fid = ParentFolderId(parent_fid)
+        self.parent_fck = None
+
+        ## Now initialize some of the properties to default values
+        self.itemid = None
+        self.item_class = None
+        self.change_key = None
+        self.created_time = None
+        self.last_modified_time = None
 
         self.eprops = []
         self.eprops_tagged = {}
@@ -288,6 +297,17 @@ class Item(Field):
 
     def get_extended_properties (self):
         return self.eprops
+
+    ## properties with their getter and setters. This is just a placeholder
+    ## for now. We will not implement all of them
+
+    @property
+    def parent_folder_id (self):
+        return self.parent_folder_id
+
+    @parent_folder_id.setter
+    def parent_folder_id (self, val):
+        self.parent_folder_id = val
 
     ##
     ## Finally, some internal methods and helper functions

@@ -187,6 +187,7 @@ class ExchangeService(object):
                                     folder_id=folder_id, items=items)
         try:
             req = clean_xml(req)
+            print req
             resp, node = self.send(req)
             logging.debug('%s', pretty_xml(resp))
         except SoapMessageError as e:

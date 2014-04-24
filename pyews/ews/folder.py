@@ -39,6 +39,8 @@ class Folder:
         self.wkfn = name
         self.service = service
 
+        ## FIXME: These properties are not consistent with our overall naming
+        ## conventions. Needs to be Fixed.
         self.ChildFolderCount = None
         self.DisplayName = None
         self.Id = None
