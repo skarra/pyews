@@ -177,6 +177,12 @@ class EmailAddresses(Field):
             email.value = child.text
             self.entries.append(email)
 
+    def add (self, key, addr):
+        email = self.Email()
+        email.add_attrib('Key', key)
+        email.value = addr
+        self.entries.append(email)
+
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
         s += '; '.join([str(x) for x in self.entries])
@@ -214,6 +220,12 @@ class PhoneNumbers(Field):
 
             phone.value = child.text
             self.entries.append(phone)
+
+    def add (self, key, num):
+        phone = self.Phone()
+        phone.add_attrib('Key', key)
+        phone.value = num
+        self.entries.append(phone)
 
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
