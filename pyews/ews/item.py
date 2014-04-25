@@ -343,10 +343,27 @@ class Item(Field):
 
     @abstractmethod
     def add_extended_property (self, node):
+        """
+        Parse the XML element pointed to by node, figure out the type of
+        property this is, initialize the property of the right type and then
+        insert that into the self.eprops member variable
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def add_tagged_property (self, tag, node):
+    def add_tagged_property (self, node=None, tag=None, value=None):
+        """
+        Add a tagged property either from an XML node or from the individual
+        components. If node is not None the other parameters are ignored.
+        """
+        raise NotImplementedError
+
+    def add_named_str_property (self, node=None, psetid=None, pname=None,
+                                ptype=None, value=None):
+        raise NotImplementedError
+
+    def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
+                                value=None):
         raise NotImplementedError
 
     ##

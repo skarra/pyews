@@ -396,6 +396,10 @@ class Contact(Item):
         ## - gender
         ## - LastModifiedTime
 
+    ##
+    ## Inherited methods. For doc see item.py
+    ##
+
     def add_extended_property (self, node):
         uri = node.find(QName_T('ExtendedFieldURI'))
         if uri is None:
@@ -407,22 +411,42 @@ class Contact(Item):
         ## Look for known extended properties
         is_tp, tag = ExtendedProperty.is_tagged_prop(uri)
         if is_tp:
-            self.add_tagged_property(tag, node)
+            self.add_tagged_property(node=node, tag=tag)
         else:
             self.eprops.append(ExtendedProperty(node=node))
 
-    def add_tagged_property (self, tag, node):
+    def add_tagged_property (self, node=None, tag=None, value=None):
+        if node and not tag:
+            uri = node.find(QName_T('ExtendedFieldURI'))
+            is_tp, tag = ExtendedProperty.is_tagged_prop(uri)
+
         eprop = None
+
         if tag == mapitags.PR_LAST_MODIFICATION_TIME:
-            self.last_modified_time = LastModifiedTime(node=node)
+            self.last_modified_time = LastModifiedTime(node=node, text=value)
             eprop = self.last_modified_time
         elif tag == mapitags.PR_GENDER:
-            self.gender = Gender(node=node)
+            self.gender = Gender(node=node, text=value)
             eprop = self.gender
         else:
-            eprop = ExtendedProperty(node=node)
+            eprop = ExtendedProperty(node=node, ptag=tag)
+            eprop.value = value
             self.eprops.append(eprop)
             self.eprops_tagged[tag] = eprop
+
+    def add_named_str_property (self, node=None, psetid=None, pname=None,
+                                ptype=None, value=None):
+        eprop = ExtendedProperty(node=node, psetid=psetid, pname=pname,
+                                 ptype=ptype)
+        self.eprops.append(eprop)
+
+    def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
+                                value=None):
+        eprop = ExtendedProperty(node=node, psetid=psetid, pid=pid,
+                                 ptype=ptype)
+        eprop.value = value
+        self.eprops.append(eprop)
+
 
     ## Override Field.get_chidren to refresh the children array every time
     def get_children (self):
