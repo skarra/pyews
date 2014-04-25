@@ -251,13 +251,13 @@ class Gender(ExtendedProperty):
                                   ptype=MapiPropertyTypeType[ptype])
 
     def write_to_xml (self):
-        if self.value.value is not None:
+        if self.val.value is not None:
             return ExtendedProperty.write_to_xml(self)
         else:
             return ''
 
     def __str__ (self):
-        v = self.value.value
+        v = self.val.value
         if v is None:
             return 'Unspecified'
         elif int(v) == GenderType.Female:
@@ -449,7 +449,7 @@ class Contact(Item):
         s  = 'ItemId: %s' % self.itemid
         s += '\nCreated: %s' % self.created_time
         if lmt_tag in self.eprops_tagged:
-            s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].value.value
+            s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].val.value
         s += '\nName: %s' % self._displayname
         s += '\nGEnder: %s' % self.gender
         s += '\nPhones: %s' % self.phones

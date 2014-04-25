@@ -183,11 +183,19 @@ class ExtendedProperty(Field):
                       ptag, pname, pid, ptype)
 
         ## FIXME: We can have a multi-valued property as well.
-        self.value = self.Value()
+        self.val = self.Value()
         if node is not None:
-            self.value.value = node.find(QName_T('Value')).text
+            self.val.value = node.find(QName_T('Value')).text
 
-        self.children = [self.efuri, self.value]
+        self.children = [self.efuri, self.val]
+
+    @property
+    def value (self):
+        return self.val.value
+
+    @value.setter
+    def value (self, text):
+        self.val.value = text
 
     def get_variant (self):
         """
