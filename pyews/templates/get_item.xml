@@ -1,5 +1,5 @@
 {% extends "base_request.xml" %}
-
+{% autoescape None %}
 {% block body %}
     <m:GetItem>
         <m:ItemShape>
@@ -17,6 +17,11 @@
                <t:ExtendedFieldURI
                     PropertyType="{{ ews_pt(mt.PR_LAST_MODIFICATION_TIME) }}"
                     PropertyTag="{{ ews_pid(mt.PR_LAST_MODIFICATION_TIME) }}" />
+
+               <!-- Any other client specified extended properties -->
+               {% for eprop_xml in custom_eprops_xml %}
+                   {{ eprop_xml }}
+               {% end %}
 
            </t:AdditionalProperties>
         </m:ItemShape>

@@ -113,13 +113,17 @@ class ExchangeService(object):
 
         return resp
 
-    def FindItems (self, folder):
+    def FindItems (self, folder, eprops_xml=[]):
         """
         Fetch all the items in the given folder.  folder is an object of type
         ews.folder.Folder. This method will first find all the ItemIds of
         contained items, then go back and fetch all the details for each of
         the items in the folder. We return an array of Item objects of the
         right type.
+
+        eprops_xml is an array of xml representation for additional extended
+        properites that need to be fetched
+
         """
 
         logging.info('pimdb_ex:FindItems() - fetching items in folder %s...',
@@ -155,11 +159,12 @@ class ExchangeService(object):
                      folder.DisplayName)
 
         if len(ret) > 0:
-            return self.GetItems([x.itemid for x in ret])
+            return self.GetItems([x.itemid for x in ret],
+                                 eprops_xml=eprops_xml)
         else:
             return ret
 
-    def GetItems (self, itemids):
+    def GetItems (self, itemids, eprops_xml=[]):
         """
         itemids is an array of itemids, and we will fetch that stuff and
         return an array of Item objects.
@@ -169,8 +174,10 @@ class ExchangeService(object):
         """
 
         logging.info('pimdb_ex:GetItems() - fetching items....')
-        req = self._render_template(utils.REQ_GET_ITEM, itemids=itemids)
+        req = self._render_template(utils.REQ_GET_ITEM, itemids=itemids,
+                                    custom_eprops_xml=eprops_xml)
         try:
+            print req
             resp, node = self.send(req)
             logging.debug('%s', pretty_xml(resp))
         except SoapMessageError as e:
