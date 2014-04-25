@@ -178,14 +178,16 @@ class ExtendedProperty(Field):
         Extended Property element
         """
 
+        ## This guy needs to be here as we have overriden the .value()
+        self.val = self.Value()
+
         Field.__init__(self, 'ExtendedProperty')
         self.efuri = self.ExtendedFieldURI(node, dis_psetid, psetid,
-                      ptag, pname, pid, ptype)
+                                           ptag, pname, pid, ptype)
 
         ## FIXME: We can have a multi-valued property as well.
-        self.val = self.Value()
         if node is not None:
-            self.val.value = node.find(QName_T('Value')).text
+            self.value = node.find(QName_T('Value')).text
 
         self.children = [self.efuri, self.val]
 
