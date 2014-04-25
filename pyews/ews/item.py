@@ -69,26 +69,43 @@ class Field:
     def add_attrib (self, key, val):
         self.attrib.update({key: val})
 
+    def atts_as_xml (self):
+        ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
+        return ' '.join(ats)
+
+    def value_as_xml (self):
+        return self.value if self.value is not None else ''
+
+    def children_as_xml (self):
+        self.children = self.get_children()
+        xmls = [x.write_to_xml() for x in self.children]
+        return '\n'.join([y for y in xmls if y is not None])
+
     def write_to_xml (self):
         """
         Return an XML representation of this field.
         """
 
-        self.children = self.get_children()
-
-        if ((self.value is not None) or
-            (len(self.attrib) > 0) or
+        if ((self.value is not None) or (len(self.attrib) > 0) or
             (len(self.children) > 0)):
-            ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
-            xmls = [x.write_to_xml() for x in self.children]
-            cs =  '\n'.join([y for y in xmls if y is not None])
-            text = self.value if self.value is not None else ''
 
-            ret =  '<t:%s %s>%s%s</t:%s>' % (self.tag, ' '.join(ats), text, cs,
-                                             self.tag)
+            text = self.value_as_xml()
+            ats = self.atts_as_xml()
+            cs = self.children_as_xml()
+
+            ret =  '<t:%s %s>%s%s</t:%s>' % (self.tag, ats, text, cs, self.tag)
             return ret
         else:
             return ''
+
+    def write_to_xml_get (self):
+        """
+        Presently only makes sense for certain ExtendedProperties
+        """
+
+        ats = self.atts_as_xml()
+        ret =  '<t:%s %s/>' % (self.tag, ats)
+        return ret
 
     def get_children (self):
         return self.children
@@ -198,6 +215,25 @@ class ExtendedProperty(Field):
     @value.setter
     def value (self, text):
         self.val.value = text
+
+    ##
+    ## Overriding inherted methods
+    ##
+
+    def value_as_xml (self):
+        ## Any attribute that has a 'Value' child should have its own value
+        ## printed out as text in the XML represented. Note for extended
+        ## properties self.value returns self.val.value for ease of access. So
+        ## if we do not do this the value will go out twide
+
+        return ''
+
+    def write_to_xml_get (self):
+        """
+        Presently only makes sense for certain ExtendedProperties
+        """
+
+        return self.efuri.write_to_xml_get()
 
     def get_variant (self):
         """
