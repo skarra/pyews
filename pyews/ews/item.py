@@ -216,6 +216,10 @@ class ExtendedProperty(Field):
 
         self.children = [self.efuri, self.val]
 
+    ##
+    ## Getter and Setters.
+    ##
+
     @property
     def value (self):
         return self.val.value
@@ -471,6 +475,21 @@ class Item(Field):
     ## First the abstract methods that will be implementd by sub classes
     ##
 
+    @abstractmethod
+    def add_tagged_property (self, node=None, tag=None, value=None):
+        """
+        Add a tagged property either from an XML node or from the individual
+        components. If node is not None the other parameters are ignored.
+        """
+        raise NotImplementedError
+
+    ##
+    ## Next, the non-abstract external methods
+    ##
+
+    def get_extended_properties (self):
+        return self.eprops
+
     def add_extended_property (self, node):
         """
         Parse the XML element pointed to by node, figure out the type of
@@ -498,13 +517,6 @@ class Item(Field):
             logging.debug('Unrecognized ExtendedProp Variant. Useless')
             self.eprops.append(ExtendedProperty(node=node))
 
-    @abstractmethod
-    def add_tagged_property (self, node=None, tag=None, value=None):
-        """
-        Add a tagged property either from an XML node or from the individual
-        components. If node is not None the other parameters are ignored.
-        """
-        raise NotImplementedError
 
     def add_named_str_property (self, node=None, psetid=None, pname=None,
                                 ptype=None, value=None):
@@ -573,14 +585,8 @@ class Item(Field):
             return None
 
     ##
-    ## Next, the non-abstract external methods
+    ## Getters and Setters
     ##
-
-    def get_extended_properties (self):
-        return self.eprops
-
-    ## properties with their getter and setters. This is just a placeholder
-    ## for now. We will not implement all of them
 
     @property
     def parent_folder_id (self):
