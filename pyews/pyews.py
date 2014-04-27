@@ -202,6 +202,21 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:CreateItems() - creating items....done')
 
+    def UpdateItems (self, items):
+        """Create items in the exchange store."""
+
+        logging.info('pimdb_ex:UpdateItems() - updating items....')
+        req = self._render_template(utils.REQ_UPDATE_ITEM, items=items)
+        try:
+            req = clean_xml(req)
+            print req
+            resp, node = self.send(req)
+            logging.debug('%s', pretty_xml(resp))
+        except SoapMessageError as e:
+            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
+
+        logging.info('pimdb_ex:UpdateItems() - updating items....done')
+
     ##
     ## Some internal messages
     ##

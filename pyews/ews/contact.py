@@ -17,7 +17,7 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-from item    import Item, Field, ExtendedProperty, LastModifiedTime
+from item    import Item, Field, FieldURI, ExtendedProperty, LastModifiedTime
 from pyews.soap    import SoapClient, unQName, QName_T
 from pyews.utils   import pretty_xml
 from pyews.ews     import mapitags
@@ -26,70 +26,82 @@ from pyews.ews.data import GenderType
 
 gnd = SoapClient.get_node_detail
 
-class FileAs(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'FileAs'
+class CField(Field):
+    def __init__ (self, tag=None, text=None):
+        Field.__init__(self, tag, text)
+        self.furi = ('contacts:%s' % tag) if tag else None
 
-class Alias(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'Alias'
+    def write_to_xml_update (self):
+        print '*** WTF'
+        s = '<t:FieldURI FieldURI="%s"/>' % self.furi
+        s += '\n<t:Contact>'
+        s += '\n  <t:%s>%s</t:%s>' % (self.tag, self.value, self.tag)
+        s += '\n</t:Contact>'
 
-class DisplayName(Field):
-    def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'DisplayName'
+        return s
 
-class CompleteName(Field):
+class FileAs(CField):
+    def __init__ (self, text=None):
+        CField.__init__(self, 'FileAs', text)
+
+class Alias(CField):
+    def __init__ (self, text=None):
+        CField.__init__(self, 'Alias', text)
+
+class DisplayName(CField):
+    def __init__ (self, text=None):
+        CField.__init__(self, 'DisplayName', text)
+
+class CompleteName(CField):
     ##
     ## Exchnage handling of some of the name fields can, at best, be described
     ## as strange.... Some of these fields can be found outside of this
     ## complex data type. However we will try to make it simple and only use
     ## CompelteName field when possible
     ##
-    class Title(Field):
+    class Title(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Title', text)
+            CField.__init__(self, 'Title', text)
 
-    class FirstName(Field):
+    class FirstName(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'FirstName', text)
+            CField.__init__(self, 'FirstName', text)
 
-    class GivenName(Field):
+    class GivenName(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'GivenName', text)
+            CField.__init__(self, 'GivenName', text)
 
-    class MiddleName(Field):
+    class MiddleName(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'MiddleName', text)
+            CField.__init__(self, 'MiddleName', text)
 
-    class LastName(Field):
+    class LastName(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'LastName', text)
+            CField.__init__(self, 'LastName', text)
 
-    class Surname(Field):
+    class Surname(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Surname', text)
+            CField.__init__(self, 'Surname', text)
 
-    class Suffix(Field):
+    class Suffix(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Suffix', text)
+            CField.__init__(self, 'Suffix', text)
 
-    class Initials(Field):
+    class Initials(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Initials', text)
+            CField.__init__(self, 'Initials', text)
 
-    class Nickname(Field):
+    class Nickname(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Nickname', text)
+            CField.__init__(self, 'Nickname', text)
 
-    class FullName(Field):
+    class FullName(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'FullName', text)
+            CField.__init__(self, 'FullName', text)
 
     def __init__ (self, text=None):
-        Field.__init__(self, 'CompleteName', text)
+        CField.__init__(self, 'CompleteName', text)
+        self.furi = 'contacts:%s' % self.tag
 
         self.title        = self.Title()
         self.given_name   = self.GivenName()
@@ -106,52 +118,53 @@ class CompleteName(Field):
                          self.last_name, self.suffix, self.initials,
                          self.nickname]
 
-class SpouseName(Field):
+class SpouseName(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'SpouseName', text)
+        CField.__init__(self, 'SpouseName', text)
 
-class JobTitle(Field):
+class JobTitle(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'JobTitle', text)
+        CField.__init__(self, 'JobTitle', text)
 
-class CompanyName(Field):
+class CompanyName(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'CompanyName', text)
+        CField.__init__(self, 'CompanyName', text)
 
-class Department(Field):
+class Department(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'Department', text)
+        CField.__init__(self, 'Department', text)
 
-class Manager(Field):
+class Manager(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'Manager', text)
+        CField.__init__(self, 'Manager', text)
 
-class AssistantName(Field):
+class AssistantName(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'AssistantName', text)
+        CField.__init__(self, 'AssistantName', text)
 
 ## FIXME: The values for these are strings, but might be better represented as
 ## DateTime objects... Hm
-class Birthday(Field):
+class Birthday(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'Birthday', text)
+        CField.__init__(self, 'Birthday', text)
 
-class WeddingAnniversary(Field):
+class WeddingAnniversary(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'WeddingAnniversary', text)
+        CField.__init__(self, 'WeddingAnniversary', text)
 
-class Notes(Field):
+class Notes(CField):
     def __init__ (self, text=None):
-        Field.__init__(self, 'Body', text)
+        CField.__init__(self, 'Body', text)
         self.attrib = {
             'BodyType' : 'Text',
             # 'IsTruncated' : 'False'
             }
+        self.furi = FieldURI(text='item:Body')
 
-class EmailAddresses(Field):
-    class Email(Field):
+class EmailAddresses(CField):
+    class Email(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Entry', text)
+            CField.__init__(self, 'Entry', text)
             self.attrib = {
                 'Key' : None,
                 'Name' : None,
@@ -166,7 +179,7 @@ class EmailAddresses(Field):
             return self.__str__()
 
     def __init__ (self, node=None):
-        Field.__init__(self, 'EmailAddresses')
+        CField.__init__(self, 'EmailAddresses')
         self.children = self.entries = []
         if node is not None:
             self.populate_from_node(node)
@@ -186,6 +199,18 @@ class EmailAddresses(Field):
         email.value = addr
         self.entries.append(email)
 
+    def write_to_xml_update (self):
+        s = ''
+        for email in self.entries:
+            s = '<t:IndexedFieldURI FieldURI="contacts.EmailAddress" '
+            s += 'FieldIndex="%s"/>' % email.attrib['Key']
+            s += '\n<t:Contact>'
+            s += '\n  <t:EmailAddresses>'
+            s += '\n    <t:Entry Key="%s">%s</t:Entry>' % (email.attrib['Key'],
+                                                           email.value)
+            s += '\n  </t:EmailAddresses>'
+            s += '\n</t:Contact>'
+
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
         s += '; '.join([str(x) for x in self.entries])
@@ -194,10 +219,10 @@ class EmailAddresses(Field):
     def __repr__ (self):
         return self.__str__()
 
-class PhoneNumbers(Field):
-    class Phone(Field):
+class PhoneNumbers(CField):
+    class Phone(CField):
         def __init__ (self, text=None):
-            Field.__init__(self, 'Entry', text)
+            CField.__init__(self, 'Entry', text)
             self.attrib = {
                 'Key' : None,               # ews.data.PhoneKey
                 }
@@ -209,7 +234,7 @@ class PhoneNumbers(Field):
             return self.__str__()
 
     def __init__ (self, node=None):
-        Field.__init__(self, 'PhoneNumbers')
+        CField.__init__(self, 'PhoneNumbers')
         self.children = self.entries = []
 
         if node is not None:
@@ -435,7 +460,10 @@ class Contact(Item):
         return self.children
 
     def save (self):
-        self.service.CreateItems(self.parent_fid.value, [self])
+        if self.itemid is None:
+            self.service.CreateItems(self.parent_fid.value, [self])
+        else:
+            self.service.UpdateItems([self])
 
     def __str__ (self):
         lmt_tag = mapitags.PR_LAST_MODIFICATION_TIME

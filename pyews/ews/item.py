@@ -60,6 +60,10 @@ class Field:
         self.children = []
         self.read_only = False
 
+        ## furi is used when this field needs to be used as part of an update
+        ## item method
+        self.furi = ('items:%s' % tag) if tag else None
+
     @property
     def value (self):
         return self._value
@@ -109,6 +113,9 @@ class Field:
         ret =  '<t:%s %s/>' % (self.tag, ats)
         return ret
 
+    def write_to_xml_update (self):
+        pass
+
     def get_children (self):
         return self.children
 
@@ -117,6 +124,10 @@ class Field:
 
     def __str__ (self):
         return self.value if self.value is not None else ""
+
+class FieldURI(Field):
+    def __init__ (self, text=None):
+        Field.__init__(self, 'FieldURI', text)
 
 class ItemId(Field):
     def __init__ (self, text=None):
@@ -130,6 +141,7 @@ class ChangeKey(Field):
 class ParentFolderId(Field):
     def __init__ (self, text=None):
         Field.__init__(self, 'ParentFolderId', text)
+        self.furi = 'folder:ParentFolderId'
 
 class ParentFolderChangeKey(Field):
     def __init__ (self, text=None):
@@ -138,6 +150,7 @@ class ParentFolderChangeKey(Field):
 class ItemClass(Field):
     def __init__ (self, text=None):
         Field.__init__(self, 'ItemClass', text)
+        self.furi = 'item:ItemClass'
  
 class DateTimeCreated(Field):
     def __init__ (self, text=None):
@@ -486,6 +499,26 @@ class Item(Field):
     ##
     ## Next, the non-abstract external methods
     ##
+
+    def get_updates (self):
+        """
+        Returns a list of child elements that need to be included
+        in an UpdateItem call. Returns three arrays as a tupple: (adds, sets,
+        dels)
+        """
+
+        sets = []
+        dels = []
+
+        for child in self.get_children():
+            if child.value is None or len(child.value) == 0:
+                dels.append(child)
+            else:
+                sets.append(child)
+
+        print 'Sets: ', sets
+        print 'Dels: ', dels
+        return [], sets, dels
 
     def get_extended_properties (self):
         return self.eprops

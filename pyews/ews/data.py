@@ -155,6 +155,11 @@ MapiPropertyTypeTypeInv = {}
 for k, v in MapiPropertyTypeType.iteritems():
     MapiPropertyTypeTypeInv[v] = k
 
+class ConflictResoltion:
+    NeverOverwrite  = 'NeverOverwrite'
+    AutoResolve     = 'AutoResolve'
+    AlwaysOverwrite = 'AlwaysOverwrite'
+
 def ews_pt (tag):
     """Return the EWS Property Type enumeration for the specific MAPI Property
     Tag. """
