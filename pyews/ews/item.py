@@ -17,13 +17,15 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-from         abc     import ABCMeta, abstractmethod
-from         pyews.soap    import SoapClient, QName_M, QName_T, unQName
-import       pyews.soap as soap
-import       pyews.utils as utils
-from pyews.ews     import mapitags
-import       xml.etree.ElementTree as ET
-from pyews.ews.data import MapiPropertyTypeType, MapiPropertyTypeTypeInv
+from    abc             import ABCMeta, abstractmethod
+from    pyews.soap      import SoapClient, QName_M, QName_T, unQName
+import  pyews.soap      as     soap
+import  pyews.utils     as     utils
+from    pyews.ews       import mapitags
+from    pyews.ews.data  import MapiPropertyTypeType, MapiPropertyTypeTypeInv
+
+import  xml.etree.ElementTree as ET
+import  logging
 
 gnd = SoapClient.get_node_detail
 
