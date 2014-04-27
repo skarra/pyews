@@ -48,6 +48,10 @@ def main ():
 
     test_find_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA')
 
+    test_update_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA',
+                       "EQAAABYAAAAJ//qJAdi9TI3OuVBfNRA2AAAfKW4A",
+                     'AQAcAHNrYXJyAGFAYXN5bmsub25taWNyb3NvZnQuY29tAC4AAAPq28rfw0yASI+t3PJx5xi8AQAJ//qJAdi9TI3OuVBfNRA2AAACAQ8AAAA=')
+
 def bind ():
     return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
 
@@ -87,6 +91,13 @@ def test_create_item (ews, fid):
     con.company_name.text = 'Govt. of West Bengal'
     con.gender.set(GenderType.Female)
     ews.CreateItems(fid, [con])
+
+def test_update_item (itemid, ck, pfid):
+    con=Contact(ews, pfid)
+    con.itemid.value = itemid
+    con.change_key.value = ck
+    con.job_title.value = 'Jobless'
+    con.save()
 
 if __name__ == "__main__":
     main()
