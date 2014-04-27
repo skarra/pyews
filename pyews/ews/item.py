@@ -146,7 +146,7 @@ class DateTimeCreated(Field):
 class PropVariant:
     UNKNOWN   = 0
     TAGGED    = 1
-    NAMED_NUM = 2
+    NAMED_INT = 2
     NAMED_STR = 3
 
 class ExtendedProperty(Field):
@@ -186,6 +186,12 @@ class ExtendedProperty(Field):
             else :
                 self.attrib.update(uri.attrib)
 
+            ## The PropertyId attribute needs to be an integer for easier
+            ## processing, so fix it
+            pid = self.attrib['PropertyId']
+            if pid is not None:
+                self.attrib['PropertyId'] = utils.safe_int(pid)
+
     class Value(Field):
         def __init__ (self, text=None):
             Field.__init__(self, 'Value')
@@ -217,6 +223,22 @@ class ExtendedProperty(Field):
     @value.setter
     def value (self, text):
         self.val.value = text
+
+    @property
+    def psetid (self):
+        return self.efuri.attrib['PropertySetId']
+
+    @psetid.setter
+    def psetid (self, val):
+        self.efuri.attrib['PropertySetId'] = val
+
+    @property
+    def pid (self):
+        return self.efuri.attrib['PropertyId']
+
+    @pid.setter
+    def pid (self, val):
+        self.efuri.attrib['PropertyId'] = val
 
     ##
     ## Overriding inherted methods
@@ -258,10 +280,26 @@ class ExtendedProperty(Field):
             and self.efuri.attrib['PropertyType'] is not None
             and self.efuri.attrib['PropertySetId'] is None
             and self.efuri.attrib['DistinguishedPropertySetId'] is None
+            and self.efuri.attrib['PropertyName'] is None
             and self.efuri.attrib['PropertyId'] is None):
             return PropVariant.TAGGED
 
-        ## FIXME: Support checks for the other variants.
+        if (self.efuri.attrib['PropertyTag'] is None
+            and self.efuri.attrib['PropertyType'] is not None
+            and (self.efuri.attrib['PropertySetId'] is not None
+                 or self.efuri.attrib['DistinguishedPropertySetId'] is not None)
+            and self.efuri.attrib['PropertyName'] is None
+            and self.efuri.attrib['PropertyId'] is not None):
+            return PropVariant.NAMED_INT
+
+        if (self.efuri.attrib['PropertyTag'] is None
+            and self.efuri.attrib['PropertyType'] is not None
+            and (self.efuri.attrib['PropertySetId'] is not None
+                 or self.efuri.attrib['DistinguishedPropertySetId'] is not None)
+            and self.efuri.attrib['PropertyName'] is not None
+            and self.efuri.attrib['PropertyId'] is None):
+            return PropVariant.NAMED_STR
+
         return PropVariant.UNKNOWN
 
     def get_prop_tag (self):
@@ -285,23 +323,111 @@ class ExtendedProperty(Field):
     ##
 
     @staticmethod
-    def is_tagged_prop (xml_node):
+    def get_variant_from_xml (xml_node):
         """
         If the element is a tagged property then returns (True, MAPITag)
         otherwise it will be (False, ignore)
         """
+        if (len(xml_node.attrib) == 2 and
+            ('PropertyTag' in xml_node.attrib
+             and 'PropertyType' in xml_node.attrib)):
+            return PropVariant.TAGGED
+
+        if (len(xml_node.attrib) == 3 and
+            (('PropertySetId' in xml_node.attrib
+              or 'DistinguishedPropertySetId' in xml_node.attrib)
+              and 'PropertyId' in xml_node.attrib
+              and 'PropertyType' in xml_node.attrib)):
+            return PropVariant.NAMED_INT
+
+        if (len(xml_node.attrib) == 3 and
+            (('PropertySetId' in xml_node.attrib
+              or 'DistinguishedPropertySetId' in xml_node.attrib)
+              and 'PropertyName' in xml_node.attrib
+              and 'PropertyType' in xml_node.attrib)):
+            return PropVariant.NAMED_STR
+
+        return PropVariant.UNKNOWN
+
+    @staticmethod
+    def get_prop_tag_from_xml (xml_node):
+        """
+        Given xml_node which corresponds to a parsed XML element for a tagged
+        property get the mapitag for this element. It is an error to call this
+        method on non-tagged property elements
+        """
+
         tp = (len(xml_node.attrib) == 2 and
               'PropertyTag' in xml_node.attrib and
               'PropertyType' in xml_node.attrib)
 
-        if tp:
-            pid   = utils.safe_int(xml_node.attrib['PropertyTag'])
-            ptype = xml_node.attrib['PropertyType']
-            tag = mapitags.PROP_TAG(MapiPropertyTypeTypeInv[ptype], pid)
+        assert tp
 
-            return (True, tag)
+        pid   = utils.safe_int(xml_node.attrib['PropertyTag'])
+        ptype = xml_node.attrib['PropertyType']
+        tag = mapitags.PROP_TAG(MapiPropertyTypeTypeInv[ptype], pid)
+
+        return tag
+
+    @staticmethod
+    def get_named_int_from_xml (xml_node):
+        """
+        Given xml_node which corresponds to a parsed XML element for a tagged
+        property get the mapitag for this element. It is an error to call this
+        method on non-tagged property elements
+        """
+
+        tp =  (len(xml_node.attrib) == 3 and
+               (('PropertySetId' in xml_node.attrib
+                 or 'DistinguishedPropertySetId' in xml_node.attrib)
+                 and 'PropertyId' in xml_node.attrib
+                 and 'PropertyType' in xml_node.attrib))
+
+        assert tp
+
+        if 'PropertySetId' in xml_node.attrib:
+            psetid = xml_node.attrib['PropertySetId']
         else:
-            return (False, 0)
+            psetid = None
+
+        if 'DistinguishedPropertySetId' in xml_node.attrib:
+            dpsetid = xml_node.attrib['DistinguishedPropertySetId']
+        else:
+            dpsetid = None
+
+        pid    = utils.safe_int(xml_node.attrib['PropertyId'])
+
+        return dpsetid, psetid, pid
+
+    @staticmethod
+    def get_named_str_from_xml (xml_node):
+        """
+        Given xml_node which corresponds to a parsed XML element for a tagged
+        property get the mapitag for this element. It is an error to call this
+        method on non-tagged property elements
+        """
+
+        tp =  (len(xml_node.attrib) == 3 and
+               (('PropertySetId' in xml_node.attrib
+                 or 'DistinguishedPropertySetId' in xml_node.attrib)
+                 and 'PropertyName' in xml_node.attrib
+                 and 'PropertyType' in xml_node.attrib))
+
+        assert tp
+
+        if 'PropertySetId' in xml_node.attrib:
+            psetid = xml_node.attrib['PropertySetId']
+        else:
+            psetid = None
+
+        if 'DistinguishedPropertySetId' in xml_node.attrib:
+            dpsetid = xml_node.attrib['DistinguishedPropertySetId']
+        else:
+            dpsetid = None
+
+        pname    = xml_node.attrib['PropertyName']
+
+        return dpsetid, psetid, pname
 
 class LastModifiedTime(ReadOnly, ExtendedProperty):
     def __init__ (self, node=None, text=None):
@@ -335,6 +461,8 @@ class Item(Field):
 
         self.eprops = []
         self.eprops_tagged = {}
+        self.eprops_named_str = {}
+        self.eprops_named_int = {}
 
         if self.resp_node is not None:
             self._init_base_fields_from_resp(resp_node)
@@ -343,14 +471,32 @@ class Item(Field):
     ## First the abstract methods that will be implementd by sub classes
     ##
 
-    @abstractmethod
     def add_extended_property (self, node):
         """
         Parse the XML element pointed to by node, figure out the type of
         property this is, initialize the property of the right type and then
         insert that into the self.eprops member variable
         """
-        raise NotImplementedError
+
+        uri = node.find(QName_T('ExtendedFieldURI'))
+        if uri is None:
+            logging.error('ExtendedProperty.init_from_xml(): no child node ' +
+                          'ExtendedFieldURI in node: %s',
+                          pretty_xml(node))
+            return
+
+        ## Look for known extended properties
+        v = ExtendedProperty.get_variant_from_xml(uri)
+        logging.debug('Processing ExtenddProperty variant: %s', v)
+        if v == PropVariant.TAGGED:
+            self.add_tagged_property(node=node)
+        elif v == PropVariant.NAMED_INT:
+            self.add_named_int_property(node=node)
+        elif v == PropVariant.NAMED_STR:
+            self.add_named_str_property(node=node)
+        else:
+            logging.debug('Unrecognized ExtendedProp Variant. Useless')
+            self.eprops.append(ExtendedProperty(node=node))
 
     @abstractmethod
     def add_tagged_property (self, node=None, tag=None, value=None):
@@ -362,11 +508,69 @@ class Item(Field):
 
     def add_named_str_property (self, node=None, psetid=None, pname=None,
                                 ptype=None, value=None):
-        raise NotImplementedError
+        eprop = ExtendedProperty(node=node, psetid=psetid, pname=pname,
+                                 ptype=ptype)
+        if value is not None:
+            eprop.value = value
+
+        self.eprops.append(eprop)
+        if eprop.psetid in self.eprops_named_str:
+            self.eprops_named_str[psetid].update({pname : eprop})
+        else:
+            self.eprops_named_str[psetid] = {pname : eprop}
 
     def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
                                 value=None):
-        raise NotImplementedError
+        eprop = ExtendedProperty(node=node, psetid=psetid, pid=pid,
+                                 ptype=ptype)
+
+        if value is not None:
+            eprop.value = value
+
+        self.eprops.append(eprop)
+        if eprop.psetid in self.eprops_named_int:
+            self.eprops_named_int[eprop.psetid].update({eprop.pid : eprop})
+        else:
+            self.eprops_named_int[eprop.psetid] = {eprop.pid : eprop}
+
+        logging.debug('Added named int prop psetid : %s, pid: 0x%x',
+                      eprop.psetid, eprop.pid)
+
+
+    def get_tagged_property (self, tag):
+        """
+        Return the Tagged ExtendedProperty object that corresponds to the
+        specified tag. Returns None if no eprop exists with specified tag
+        """
+
+        try:
+           return self.eprops_tagged[tag]
+        except KeyError, e:
+            return None
+
+    def get_named_str_property (self, psetid, pname):
+        """
+        Return the Named String ExtendedProperty object that corresponds to
+        the specified psetid and . Returns None if no such eprop exists
+        """
+
+        try:
+           return self.eprops_named_str[psetid][pname]
+        except KeyError, e:
+            return None
+
+    def get_named_int_property (self, psetid, pid):
+        """
+        Return the Named Integer ExtendedProperty object that corresponds to
+        the specified psetid and . Returns None if no such eprop exists
+        """
+
+        try:
+           return self.eprops_named_int[psetid][pid]
+        except KeyError, e:
+            logging.debug('Named int prop missing-psetid : %s, pid: 0x%x',
+                          psetid, pid)
+            return None
 
     ##
     ## Next, the non-abstract external methods

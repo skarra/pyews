@@ -18,7 +18,6 @@
 ## not, see <http://www.gnu.org/licenses/>.
 
 from item    import Item, Field, ExtendedProperty, LastModifiedTime
-from item    import PropVariant
 from pyews.soap    import SoapClient, unQName, QName_T
 from pyews.utils   import pretty_xml
 from pyews.ews     import mapitags
@@ -400,25 +399,10 @@ class Contact(Item):
     ## Inherited methods. For doc see item.py
     ##
 
-    def add_extended_property (self, node):
-        uri = node.find(QName_T('ExtendedFieldURI'))
-        if uri is None:
-            logging.error('ExtendedProperty.init_from_xml(): no child node ' +
-                          'ExtendedFieldURI in node: %s',
-                          pretty_xml(node))
-            return
-
-        ## Look for known extended properties
-        is_tp, tag = ExtendedProperty.is_tagged_prop(uri)
-        if is_tp:
-            self.add_tagged_property(node=node, tag=tag)
-        else:
-            self.eprops.append(ExtendedProperty(node=node))
-
     def add_tagged_property (self, node=None, tag=None, value=None):
-        if node and not tag:
+        if node is not None and tag is None:
             uri = node.find(QName_T('ExtendedFieldURI'))
-            is_tp, tag = ExtendedProperty.is_tagged_prop(uri)
+            tag = ExtendedProperty.get_prop_tag_from_xml(uri)
 
         eprop = None
 
@@ -433,20 +417,6 @@ class Contact(Item):
             eprop.value = value
             self.eprops.append(eprop)
             self.eprops_tagged[tag] = eprop
-
-    def add_named_str_property (self, node=None, psetid=None, pname=None,
-                                ptype=None, value=None):
-        eprop = ExtendedProperty(node=node, psetid=psetid, pname=pname,
-                                 ptype=ptype)
-        self.eprops.append(eprop)
-
-    def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
-                                value=None):
-        eprop = ExtendedProperty(node=node, psetid=psetid, pid=pid,
-                                 ptype=ptype)
-        eprop.value = value
-        self.eprops.append(eprop)
-
 
     ## Override Field.get_chidren to refresh the children array every time
     def get_children (self):
