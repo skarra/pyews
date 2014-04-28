@@ -116,6 +116,9 @@ class Field:
     def write_to_xml_update (self):
         pass
 
+    def has_updates (self):
+        return not (self.value is None or len(self.value) == 0)
+
     def get_children (self):
         return self.children
 
@@ -510,11 +513,13 @@ class Item(Field):
         sets = []
         dels = []
 
+        print 'processing children: ', self.get_children()
+
         for child in self.get_children():
-            if child.value is None or len(child.value) == 0:
-                dels.append(child)
-            else:
+            if child.has_updates():
                 sets.append(child)
+            else:
+                dels.append(child)
 
         print 'Sets: ', sets
         print 'Dels: ', dels

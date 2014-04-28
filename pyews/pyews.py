@@ -113,7 +113,7 @@ class ExchangeService(object):
 
         return resp
 
-    def FindItems (self, folder, eprops_xml=[]):
+    def FindItems (self, folder, eprops_xml=[], ids_only=False):
         """
         Fetch all the items in the given folder.  folder is an object of type
         ews.folder.Folder. This method will first find all the ItemIds of
@@ -158,10 +158,11 @@ class ExchangeService(object):
         logging.info('pimdb_ex:FindItems() - fetching items in folder %s...done',
                      folder.DisplayName)
 
-        if len(ret) > 0:
+        if len(ret) > 0 and ids_only == False:
             return self.GetItems([x.itemid for x in ret],
                                  eprops_xml=eprops_xml)
         else:
+            print pretty_xml(resp)
             return ret
 
     def GetItems (self, itemids, eprops_xml=[]):

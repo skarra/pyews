@@ -32,7 +32,6 @@ class CField(Field):
         self.furi = ('contacts:%s' % tag) if tag else None
 
     def write_to_xml_update (self):
-        print '*** WTF'
         s = '<t:FieldURI FieldURI="%s"/>' % self.furi
         s += '\n<t:Contact>'
         s += '\n  <t:%s>%s</t:%s>' % (self.tag, self.value, self.tag)
@@ -175,9 +174,6 @@ class EmailAddresses(CField):
         def __str__ (self):
             return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.value)
 
-        def __repr__ (self):
-            return self.__str__()
-
     def __init__ (self, node=None):
         CField.__init__(self, 'EmailAddresses')
         self.children = self.entries = []
@@ -199,10 +195,14 @@ class EmailAddresses(CField):
         email.value = addr
         self.entries.append(email)
 
+    def has_updates (self):
+        print ' ** Emails has updates: ', len(self.entries)
+        return len(self.entries) > 0
+
     def write_to_xml_update (self):
         s = ''
         for email in self.entries:
-            s = '<t:IndexedFieldURI FieldURI="contacts.EmailAddress" '
+            s += '\n<t:IndexedFieldURI FieldURI="contacts:EmailAddress" '
             s += 'FieldIndex="%s"/>' % email.attrib['Key']
             s += '\n<t:Contact>'
             s += '\n  <t:EmailAddresses>'
@@ -211,13 +211,12 @@ class EmailAddresses(CField):
             s += '\n  </t:EmailAddresses>'
             s += '\n</t:Contact>'
 
-    def __str__ (self):
-        s = '%s Numbers: ' % len(self.entries)
-        s += '; '.join([str(x) for x in self.entries])
         return s
 
-    def __repr__ (self):
-        return self.__str__()
+    def __str__ (self):
+        s = '%s Addresses: ' % len(self.entries)
+        s += '; '.join([str(x) for x in self.entries])
+        return s
 
 class PhoneNumbers(CField):
     class Phone(CField):
@@ -229,9 +228,6 @@ class PhoneNumbers(CField):
 
         def __str__ (self):
             return 'Key: %8s  Number: %s' % (self.attrib['Key'], self.value)
-
-        def __repr__ (self):
-            return self.__str__()
 
     def __init__ (self, node=None):
         CField.__init__(self, 'PhoneNumbers')
@@ -255,13 +251,30 @@ class PhoneNumbers(CField):
         phone.value = num
         self.entries.append(phone)
 
+    def has_updates (self):
+        print ' %%%%  Phones has updates: ', len(self.entries)
+        return len(self.entries) > 0
+
+    def write_to_xml_update (self):
+        s = ''
+        print 'Processing %d entries' % len(self.entries)
+        for phone in self.entries:
+            print '   Processing entry: ', phone.value
+            s += '\n<t:IndexedFieldURI FieldURI="contacts:PhoneNumber" '
+            s += 'FieldIndex="%s"/>' % phone.attrib['Key']
+            s += '\n<t:Contact>'
+            s += '\n  <t:PhoneNumbers>'
+            s += '\n    <t:Entry Key="%s">%s</t:Entry>' % (phone.attrib['Key'],
+                                                           phone.value)
+            s += '\n  </t:PhoneNumbers>'
+            s += '\n</t:Contact>'
+
+        return s
+
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
         s += '; '.join([str(x) for x in self.entries])
         return s
-
-    def __repr__ (self):
-        return self.__str__()
 
 ##
 ## Extended Properties
