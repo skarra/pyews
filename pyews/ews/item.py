@@ -92,8 +92,10 @@ class Field:
         Return an XML representation of this field.
         """
 
+        children = self.get_children()
+
         if ((self.value is not None) or (len(self.attrib) > 0) or
-            (len(self.children) > 0)):
+            (len(children) > 0)):
 
             text = self.value_as_xml()
             ats = self.atts_as_xml()
@@ -600,7 +602,6 @@ class Item(Field):
 
         logging.debug('Added named int prop psetid : %s, pid: 0x%x',
                       eprop.psetid, eprop.pid)
-
 
     def get_tagged_property (self, tag):
         """
