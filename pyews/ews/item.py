@@ -590,9 +590,12 @@ class Item(Field):
 
         self.eprops.append(eprop)
         if eprop.psetid in self.eprops_named_str:
-            self.eprops_named_str[psetid].update({pname : eprop})
+            self.eprops_named_str[eprop.psetid].update({eprop.pname : eprop})
         else:
-            self.eprops_named_str[psetid] = {pname : eprop}
+            self.eprops_named_str[eprop.psetid] = {eprop.pname : eprop}
+
+        logging.debug('Added named str prop psetid : %s, pname: %s',
+                      eprop.psetid, eprop.pname)
 
     def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
                                 value=None):
