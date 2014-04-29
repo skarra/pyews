@@ -473,7 +473,7 @@ class Contact(Item):
         return self.children
 
     def save (self):
-        if self.itemid is None:
+        if self.itemid.value is None:
             self.service.CreateItems(self.parent_fid.value, [self])
         else:
             self.service.UpdateItems([self])
