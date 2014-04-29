@@ -263,6 +263,14 @@ class ExtendedProperty(Field):
     def pid (self, val):
         self.efuri.attrib['PropertyId'] = val
 
+    @property
+    def pname (self):
+        return self.efuri.attrib['PropertyName']
+
+    @pname.setter
+    def pname (self, val):
+        self.efuri.attrib['PropertyName'] = val
+
     ##
     ## Overriding inherted methods
     ##
