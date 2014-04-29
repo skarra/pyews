@@ -117,7 +117,8 @@ class Field:
         pass
 
     def has_updates (self):
-        return not (self.value is None or len(self.value) == 0)
+        return not (self.value is None or
+                    (isinstance(self.value, list) and len(self.value) == 0))
 
     def get_children (self):
         return self.children
@@ -278,6 +279,20 @@ class ExtendedProperty(Field):
         """
 
         return self.efuri.write_to_xml_get()
+
+    def write_to_xml_update (self):
+        s = ''
+
+        ef = self.efuri.write_to_xml()
+        s += ef
+        s += '\n<t:Contact>'
+        s += '\n  <t:ExtendedProperty>'
+        s += '\n      %s' % ef
+        s += '\n      <t:Value>%s</t:Value>' % self.value
+        s += '\n  </t:ExtendedProperty>'
+        s += '\n</t:Contact>'
+
+        return s
 
     def get_variant (self):
         """
