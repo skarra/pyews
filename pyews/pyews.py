@@ -24,10 +24,12 @@ import utils
 from   utils            import pretty_xml, clean_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
-from   ews.data         import FolderClass, EWSMessageError
-from   ews.data         import EWSCreateFolderError, EWSDeleteFolderError
+from   ews.data         import FolderClass
+from   ews.errors       import EWSMessageError, EWSCreateFolderError
+from   ews.errors       import EWSDeleteFolderError
 from   ews.folder       import Folder
 from   ews.contact      import Contact
+from   ews.request_response import GetItemsRequest, GetItemsResponse
 
 from   tornado import template
 from   soap import SoapClient, SoapMessageError, QName_T
@@ -175,17 +177,12 @@ class ExchangeService(object):
         """
 
         logging.info('pimdb_ex:GetItems() - fetching items....')
-        req = self._render_template(utils.REQ_GET_ITEM, itemids=itemids,
-                                    custom_eprops_xml=eprops_xml)
-        try:
-            print req
-            resp, node = self.send(req)
-            logging.debug('%s', pretty_xml(resp))
-        except SoapMessageError as e:
-            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
-
+        req = GetItemsRequest(self, itemids=itemids,
+                              custom_eprops_xml=eprops_xml)
+        resp = req.execute()
         logging.info('pimdb_ex:GetItems() - fetching items...done')
-        return self._construct_items(resp, node)
+
+        return resp.items
 
     def CreateItems (self, folder_id, items):
         """Create items in the exchange store."""
@@ -203,20 +200,27 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:CreateItems() - creating items....done')
 
-    def UpdateItems (self, items):
-        """Create items in the exchange store."""
+    def UpdateItems (self, folder_id, sync_state):
+        """
+        Fetch updates on the Create items in the exchange store."""
 
         logging.info('pimdb_ex:UpdateItems() - updating items....')
-        req = self._render_template(utils.REQ_UPDATE_ITEM, items=items)
+        req = self._render_template(utils.REQ_UPDATE_ITEM, folder_id=folder_id,
+                                    sync_state=sync_state)
+
+        resp_obj = UpdateItemsResp()
         try:
             req = clean_xml(req)
             print req
             resp, node = self.send(req)
+            ## FIXME: Each batch will contain only 512 items. We need to check
+            ## if there are more items and iterate.
             logging.debug('%s', pretty_xml(resp))
         except SoapMessageError as e:
             raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
         logging.info('pimdb_ex:UpdateItems() - updating items....done')
+        return node
 
     ##
     ## Some internal messages
@@ -241,12 +245,12 @@ class ExchangeService(object):
         self.soap = SoapClient(self.Url, user=self.credentials.user,
                                pwd=self.credentials.pwd)
 
-    def send (self, req):
+    def send (self, req, debug=False):
         """
         Will raise a SoapConnectionError if there is a connection problem.
         """
 
-        return self.soap.send(req)
+        return self.soap.send(req, debug)
 
     def get_distinguished_folder (self, name):
         elem = u'<t:DistinguishedFolderId Id="%s"/>' % name
@@ -274,6 +278,7 @@ class ExchangeService(object):
         res = re.match('(.*)Exchange.asmx$', url)
         return res.group(1) + 'Services.wsdl'
 
+    ## FIXME: To be removed once all the requests become classes
     def _render_template (self, name, **kwargs):
         return self.loader.load(name).generate(**kwargs)
 

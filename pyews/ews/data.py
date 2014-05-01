@@ -18,8 +18,8 @@
 ## not, see <http://www.gnu.org/licenses/>.
 
 ##
-#i# In this file we define some standard names, constants and values that will
- ## be recognizabe for EWS / EWS Managed API users
+## In this file we define some standard names, constants and values that will
+## be recognizabe for EWS / EWS Managed API users
 ##
 
 import mapitags
@@ -99,35 +99,6 @@ class GenderType:
     Unspecified = 0x0001
     Female      = 0x0002
     Male        = 0x0003
-
-class EWSMessageError(SoapMessageError):
-    def __init__ (self, resp_code, xml_resp=None, node=None):
-        SoapMessageError.__init__(self, resp_code, xml_resp, node)
-        self.parse_error_msg()
-
-    def parse_error_msg (self):
-        if self.node is not None:
-            self.node = SoapClient.parse_xml(self.xml_resp)
-
-        if self.resp_code == 'ErrorSchemaValidation':
-            for i in self.node.iter('faultstring'):
-                if i is not None:
-                    self.msg_text = i.text
-        else:
-            for i in self.node.iter(QName_M('MessageText')):
-                if i is not None:
-                    self.msg_text = i.text
-
-        return None
-
-    def __str__ (self):
-        return '%s - %s' % (self.resp_code, self.msg_text)
-
-class EWSCreateFolderError(Exception):
-    pass
-
-class EWSDeleteFolderError(Exception):
-    pass
 
 MapiPropertyTypeType = {
     mapitags.PT_UNSPECIFIED : "Unspecified",

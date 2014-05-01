@@ -18,9 +18,10 @@
 ## not, see <http://www.gnu.org/licenses/>.
 
 import logging, re, requests
-from requests.auth import HTTPBasicAuth
+from   requests.auth import HTTPBasicAuth
 import xml.etree.ElementTree as ET
 import utils
+from   utils import pretty_xml
 
 M_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/messages'
 E_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/errors'
@@ -62,7 +63,7 @@ class SoapClient(object):
         self.pwd = pwd
         self.auth = HTTPBasicAuth(user, pwd)
 
-    def send (self, request):
+    def send (self, request, debug=False):
         """
         Send the given rquest to the server, and return the response text as
         well as a parsed node object as a (resp.text, node) tuple.
@@ -77,12 +78,10 @@ class SoapClient(object):
         except requests.exceptions.ConnectionError as e:
             raise SoapConnectionError(e)
 
-        r_code, node = SoapClient.get_response_code(r.text)
-        if r_code != 'NoError':
-            # r_msg, node = SoapClient.get_error_msg(r.text, node, code=r_code)
-            raise SoapMessageError(code=r_code, xml_resp=r.text, node=node)
+        if debug:
+            logging.debug('%s', pretty_xml(r.text))
 
-        return r.text, node
+        return SoapClient.parse_xml(r.text)
 
     @staticmethod
     def parse_xml (soap_resp):
@@ -125,27 +124,3 @@ class SoapClient(object):
                 return (i.text, i.attrib, root)
 
         return (None, None, root)
-
-    @staticmethod
-    def get_response_code (soap_resp, root=None):
-        """Return a (resp_code, root_node) tuple after parsing the soap
-        response xml message. If root node is not present then the provided
-        soap_response xml message is first parsed"""
-
-        if not root:
-            root = SoapClient.parse_xml(soap_resp)
-
-        for i in root.iter(QName_M('ResponseCode')):
-            if i is not None:
-                return (i.text, root)
-
-        for i in root.iter('faultcode'):
-            if i is not None:
-                ## hack alert: stripping out the namespace prefix...
-                return (i.text[2:], root)
-
-        for i in root.iter(QName_E('ResponseCode')):
-            if i is not None:
-                return (i.text, root)
-
-        return (None, root)

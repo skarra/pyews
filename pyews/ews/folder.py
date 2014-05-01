@@ -20,6 +20,8 @@
 import pyews.soap as soap
 import pyews.utils as utils
 from   pyews.soap import SoapClient, QName_M, QName_T, unQName
+from   pyews.ews.request_response import GetFolderRequest, GetFolderResponse
+from   pyews.ews.request_response import FindFoldersRequest, FindFoldersResponse
 import xml.etree.ElementTree as ET
 
 import logging
@@ -35,7 +37,7 @@ class Folder:
     Represents a EWS Folder. Names match EWS Managed API as much as possible
     """
 
-    def __init__ (self, service, name, resp=None):
+    def __init__ (self, service, name, node=None):
         self.wkfn = name
         self.service = service
 
@@ -52,10 +54,11 @@ class Folder:
         self.FolderClass = None
 
         ## The attributes that do not directly 
-        self.bind_response = None
+        self.bind_response_code = None
 
-        if resp:
-            self._init_fields(resp)
+        self.node = node
+        if node is not None:
+            self._init_fields(node)
 
     ##
     ## First the methods that are similar to the EWS Managed API. The names
@@ -74,24 +77,10 @@ class Folder:
         root_id = self.Id
         ck = self.ChangeKey
 
-        ret = []
-
-        req = self.service._render_template(utils.REQ_FIND_FOLDER_ID,
-                                       folder_ids=[(root_id, ck)])
-        resp, root = self.service.send(req)
-        folders, root = self._parse_resp_for_folders(resp, root)
-
-        for f in folders:
-            f.ParentFolderId = root_id
-
-            if not types or f.FolderClass in types:
-                ret.append(f)
-
-            if recursive and f.ChildFolderCount > 0:
-                logging.debug('Exploring deeper into: %s', f.DisplayName)
-                ret += f.FindFolders(types=types, recursive=recursive)
-
-        return ret
+        req = FindFoldersRequest(self.service, folder_ids=[(root_id, ck)],
+                                 traversal='Deep' if recursive else 'Shallow')
+        resp = req.execute()
+        return resp.folders
 
     ##
     ## Class methods
@@ -103,71 +92,46 @@ class Folder:
         this folder. wkfn stands for well known folder name. This method
         returns a Folder object"""
 
-        req = service._render_template(utils.REQ_BIND_FOLDER,
-                                       folder_name=wkfn)
-        resp, node = service.send(req)
-        return Folder(service, wkfn, resp)
+        req = GetFolderRequest(service, folder_name=wkfn)
+        resp = req.execute()
+        return Folder(service, wkfn, resp.folder_node)
 
     ##
     ## Internal methods
     ##
 
-    def _init_fields (self, resp):
-        """resp is the XML response from the server in response to a Bind
-        request."""
+    def _init_fields (self, root):
+        """root is the parsed XML response pointing to a Folder element"""
 
-        resp, root = SoapClient.get_response_code(resp)
-        if resp != 'NoError':
-            raise EWSFoldeError('Could not bind folder (%s): %s',
-                                self.wkfn, resp)
-        else:
-            self.bind_response = resp
+        # fid_elem = root.iter(QName_T('FolderId'))
+        # if fid_elem is not None:
+        #     self.Id = fid_elem.attrib['Id']
+        #     self.ChangeKey = fid_elem.attrib['ChangeKey']
 
-        self.Id, self.ChangeKey = self._get_first_folder_id(root)
-        assert(self.Id)
+        # assert self.Id
 
-    def _get_first_folder_id (self, root):
-        for i in root.iter(QName_T('FolderId')):
-            if i is not None:
-                return i.attrib['Id'], i.attrib['ChangeKey']
+        idelem = root.find(QName_T('FolderId'))
+        f.Id = idelem.attrib['Id']
+        f.ChangeKey = idelem.attrib['ChangeKey']
 
-            return None, None
-
-    def _parse_resp_for_folders (self, resp, root=None):
-        """Return an array of Folder objects from stuff found in resp. Start
-        with the parsed root object if it is not None. Return (ary, root)
-        tuple."""
-
-        if root is not None:
-            root = SoapClient.parse_xml(resp)
-
-        dn = QName_T('DisplayName')
-        idn = QName_T('FolderId')
-        cncn = QName_T('ChildFolderCount')
-        
-        ret = []
-        for folders in root.iter(QName_T('Folders')):
-            for folder_elem in folders:
-                f = Folder(self.service, None)
-
-                idelem = folder_elem.find(idn)
-                f.Id = idelem.attrib['Id']
-                f.ChangeKey = idelem.attrib['ChangeKey']
-                f.DisplayName = folder_elem.find(dn).text
-                f.ChildFolderCount = folder_elem.find(cncn).text
-                f.FolderClass = folder_elem.find(QName_T('FolderClass')).text
-                f.TotalCount  = folder_elem.find(QName_T('TotalCount')).text
-                f.TotalCount  = int(f.TotalCount)
-
-                ret.append(f)
-                
-            break
-
-        return ret, root
+        self.DisplayName      = root.find(QName_T('DisplayName')).text
+        self.ChildFolderCount = root.find(QName_T('ChildFolderCount')).text
+        self.FolderClass      = root.find(QName_T('FolderClass')).text
+        self.TotalCount       = root.find(QName_T('TotalCount')).text
+        self.TotalCount       = int(f.TotalCount)
 
     ##
     ## External Methods
     ##
+
+    def get_updates (self, sync_state):
+        """
+        Given a sync_state ID, fetch all the changes since that time. This
+        methods returns a tuple (new, mod, del) -> where each element is an
+        array of Contact objects
+        """
+
+        new, mode, self.get_ews().UpdateItems(self.Id, sync_state)
 
     def __str__ (self):
         s = 'Name: %s' % self.DisplayName
