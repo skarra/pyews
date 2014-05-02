@@ -141,8 +141,7 @@ class ItemId(Field):
 
 class ChangeKey(Field):
     def __init__ (self, text=None):
-        Field.__init__(self, text)
-        self.tag = 'ChangeKey'
+        Field.__init__(self, 'ChangeKey', text)
 
 class ParentFolderId(Field):
     def __init__ (self, text=None):
@@ -677,8 +676,8 @@ class Item(Field):
             tag = unQName(child.tag)
 
             if tag == 'ItemId':
-                self.itemid = ItemId(child.attrib['Id'])
-                self.change_key = ChangeKey(child.attrib['ChangeKey'])
+                self.itemid.value = child.attrib['Id']
+                self.change_key.value = child.attrib['ChangeKey']
             elif tag == 'ParentFolderId':
                 self.parent_fid = ParentFolderId(child.attrib['Id'])
                 self.parent_fck = ParentFolderChangeKey(child.attrib['ChangeKey'])
