@@ -196,7 +196,6 @@ class EmailAddresses(CField):
         self.entries.append(email)
 
     def has_updates (self):
-        print ' ** Emails has updates: ', len(self.entries)
         return len(self.entries) > 0
 
     def write_to_xml_update (self):
@@ -252,14 +251,11 @@ class PhoneNumbers(CField):
         self.entries.append(phone)
 
     def has_updates (self):
-        print ' %%%%  Phones has updates: ', len(self.entries)
         return len(self.entries) > 0
 
     def write_to_xml_update (self):
         s = ''
-        print 'Processing %d entries' % len(self.entries)
         for phone in self.entries:
-            print '   Processing entry: ', phone.value
             s += '\n<t:IndexedFieldURI FieldURI="contacts:PhoneNumber" '
             s += 'FieldIndex="%s"/>' % phone.attrib['Key']
             s += '\n<t:Contact>'
@@ -482,6 +478,7 @@ class Contact(Item):
         lmt_tag = mapitags.PR_LAST_MODIFICATION_TIME
 
         s  = 'ItemId: %s' % self.itemid
+        s += '\nChangeKey: %s' % self.change_key
         s += '\nCreated: %s' % self.created_time
         if lmt_tag in self.eprops_tagged:
             s += '\nLast Modified: %s' % self.eprops_tagged[lmt_tag].val.value
@@ -490,6 +487,7 @@ class Contact(Item):
         s += '\nPhones: %s' % self.phones
         s += '\nEmails: %s' % self.emails
         s += '\nNotes: %s' % self.notes
+        s += '\nJob title: %s' % self.job_title.value
 
         return s
 
