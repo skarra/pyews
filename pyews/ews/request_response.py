@@ -292,3 +292,59 @@ class GetItemsResponse(Response):
         ## loops.
         for cxml in self.node.iter(QName_T('Contact')):
             self.items.append(Contact(self, resp_node=cxml))
+
+##
+## Updatetems
+##
+
+class UpdateItemsRequest(Request):
+    """
+    Send an update request on the specified items to the server, and save the
+    returned changekeys back to the source item objects
+    """
+
+    def __init__ (self, ews, **kwargs):
+        Request.__init__(self, ews, template=utils.REQ_UPDATE_ITEM)
+        self.kwargs = kwargs
+
+        self.items_map = {}
+        for item in kwargs['items']:
+            self.items_map[item.itemid.value] = item
+
+    ##
+    ## Implement the abstract methods
+    ##
+
+    def execute (self):
+        self.resp_node = self.request_server(debug=False)
+        self.resp_obj = UpdateItemsResponse(self, self.resp_node)
+        self.update_change_keys()
+
+        return self.resp_obj
+
+    def update_change_keys (self):
+        for resp_item in self.resp_obj.items:
+            iid = resp_item.itemid.value
+            ck  = resp_item.change_key.value
+
+            self.items_map[iid].change_key.set(ck)
+
+class UpdateItemsResponse(Response):
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
+
+        if node is not None:
+            self.init_from_node(node)
+
+    def init_from_node (self, node):
+        """
+        node is a parsed XML Element containing the response. FIXME
+        """
+
+        self.parse(QName_M('UpdateItemResponseMessage'))
+
+        self.items = []
+        ## FIXME: As we support additional item types we will add more such
+        ## loops.
+        for cxml in self.node.iter(QName_T('Contact')):
+            self.items.append(Contact(self, resp_node=cxml))

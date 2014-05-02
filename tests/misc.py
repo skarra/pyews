@@ -38,22 +38,20 @@ def main ():
     ews.init_soap_client()
 
     root = bind()
-    cfs = root.FindFolders(types=FolderClass.Contacts)
+    # cfs = root.FindFolders(types=FolderClass.Contacts)
 
     # test_create_folder(root)
     # test_find_item(cons[0].itemid.text)
 
     # test_create_item(ews, cfs[0].Id)
-    # cons = test_list_items(cfs[0])
+    # cons = test_list_items(root, ids_only=True)
 
-    test_find_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA')
-
-    test_update_item('AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA',
-                       "EQAAABYAAAAJ//qJAdi9TI3OuVBfNRA2AAAfKW4A",
-                     'AQAcAHNrYXJyAGFAYXN5bmsub25taWNyb3NvZnQuY29tAC4AAAPq28rfw0yASI+t3PJx5xi8AQAJ//qJAdi9TI3OuVBfNRA2AAACAQ8AAAA=')
+    iid = 'AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA'
+    c = test_find_item(iid)
+    # test_update_item(iid, c.change_key.value, c.parent_fid)
 
 def bind ():
-    return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)    
+    return Folder.bind(ews, WellKnownFolderName.MsgFolderRoot)
 
 def test_fetch_contact_folder ():
     contacts = root.fetch_all_folders(types=FolderClass.Contacts)
@@ -65,11 +63,12 @@ def test_create_folder (parent):
                             [('Test Contacts', FolderClass.Contacts)])
     print utils.pretty_xml(resp)
 
-def test_list_items (root):
-    cfs = root.FindFolders(types=FolderClass.Contacts)
-    contacts = ews.FindItems(cfs[0])
+def test_list_items (root, ids_only):
+    cfs = root.FindFolders(types=[FolderClass.Contacts])
+    contacts = ews.FindItems(cfs[0], ids_only=ids_only)
+    print 'Total contacts: ', len(contacts)
     for con in contacts:
-        n = con.display_name.text
+        n = con.display_name.value
         print 'Name: %-10s; itemid: %s' % (n, con.itemid)
 
     return contacts
@@ -80,6 +79,8 @@ def test_find_item (itemid):
         print 'WTF. Could not find itemid ', itemid
     else:
         print cons[0]
+
+    return cons[0]
 
 def test_create_item (ews, fid):
     con = Contact(ews, fid)
@@ -96,7 +97,9 @@ def test_update_item (itemid, ck, pfid):
     con=Contact(ews, pfid)
     con.itemid.value = itemid
     con.change_key.value = ck
-    con.job_title.value = 'Jobless'
+    con.job_title.value = 'Chief comedian'
+    con.gender.value = 1
+    con.phones.add('PrimaryPhone', '+91 90088 02194')
     con.save()
 
 if __name__ == "__main__":

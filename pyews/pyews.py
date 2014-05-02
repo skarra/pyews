@@ -31,6 +31,7 @@ from   ews.folder       import Folder
 from   ews.contact      import Contact
 from   ews.request_response import GetItemsRequest, GetItemsResponse
 from   ews.request_response import FindItemsRequest, FindItemsResponse
+from   ews.request_response import UpdateItemsRequest, UpdateItemsResponse
 
 from   tornado import template
 from   soap import SoapClient, SoapMessageError, QName_T
@@ -193,39 +194,22 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:CreateItems() - creating items....done')
 
-    def UpdateItems (self, folder_id, sync_state):
+    def UpdateItems (self, items):
         """
-        Fetch updates on the Create items in the exchange store."""
+        Fetch updates from the specified folder_id.  items in the exchange store.
+        """
 
         logging.info('pimdb_ex:UpdateItems() - updating items....')
-        req = self._render_template(utils.REQ_UPDATE_ITEM, folder_id=folder_id,
-                                    sync_state=sync_state)
 
-        resp_obj = UpdateItemsResp()
-        try:
-            req = clean_xml(req)
-            print req
-            resp, node = self.send(req)
-            ## FIXME: Each batch will contain only 512 items. We need to check
-            ## if there are more items and iterate.
-            logging.debug('%s', pretty_xml(resp))
-        except SoapMessageError as e:
-            raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
+        req = UpdateItemsRequest(self, items=items)
+        resp = req.execute()
 
         logging.info('pimdb_ex:UpdateItems() - updating items....done')
-        return node
+        return resp.items
 
     ##
     ## Some internal messages
     ##
-
-    def _construct_items (self, node):
-        ret = []
-        ## As we support additional item types we will add more such loops.
-        for cxml in node.iter(QName_T('Contact')):
-            ret.append(Contact(self, resp_node=cxml))
-
-        return ret
 
     ##
     ## Other external methods
