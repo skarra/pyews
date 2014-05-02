@@ -17,13 +17,13 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import utils
+import logging, traceback
+import pyews.utils as utils
 
 from   abc            import ABCMeta, abstractmethod
-from   utils          import pretty_xml, clean_xml
-from   soap           import QName_T, QName_M
-from   ews.contact    import Contact
+from   pyews.soap     import QName_T, QName_M
+from   pyews.utils    import pretty_xml, clean_xml
+from   pyews.ews.contact    import Contact
 
 ##
 ## Base classes
@@ -57,7 +57,8 @@ class Request(object):
         return self.ews.send(r, debug)
 
 class Response(object):
-    def __init__ (self, node):
+    def __init__ (self, req, node):
+        self.req = req
         self.node = node
         self.err_cnt = 0
         self.suc_cnt = 0
@@ -146,13 +147,13 @@ class GetFolderRequest(Request):
 
     def execute (self):
         self.resp_node = self.request_server(debug=False)
-        self.resp_obj = GetFolderResponse(self.resp_node)
+        self.resp_obj = GetFolderResponse(self, self.resp_node)
 
         return self.resp_obj
 
 class GetFolderResponse(Response):
-    def __init__ (self, node=None):
-        Response.__init__(self, node)
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
 
         if node is not None:
             self.init_from_node(node)
@@ -163,7 +164,9 @@ class GetFolderResponse(Response):
         """
 
         self.parse(QName_M('GetFolderResponseMessage'))
-        self.folder_node = self.node.find(QName_T('Folder'))
+        for child in self.node.iter(QName_T('Folder')):
+            self.folder_node = child
+            break
 
 ##
 ## FindFolders
@@ -179,14 +182,15 @@ class FindFoldersRequest(Request):
     ##
 
     def execute (self):
-        self.resp_node = self.request_server(debug=True)
-        self.resp_obj = FindFoldersResponse(self.resp_node)
+        traceback.print_stack()
+        self.resp_node = self.request_server(debug=False)
+        self.resp_obj = FindFoldersResponse(self, self.resp_node)
 
         return self.resp_obj
 
 class FindFoldersResponse(Response):
-    def __init__ (self, node=None):
-        Response.__init__(self, node)
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
 
         if node is not None:
             self.init_from_node(node)
@@ -196,13 +200,15 @@ class FindFoldersResponse(Response):
         node is a parsed XML Element containing the response
         """
 
+        from   pyews.ews.folder import Folder as F
+
         self.parse(QName_M('FindFolderResponseMessage'))
 
         self.folders = []
-        ## FIXME: As we support additional item types we will add more such
-        ## loops.
-        for cxml in self.node.iter(QName_T('Folder')):
-            self.foldrs.append(Folder(self.ews, None, node=cxml))
+        for folders  in self.node.iter(QName_T('Folders')):
+            for child in folders:
+                self.folders.append(F(self.req.ews, None, node=child))
+            break
 
 ##
 ## GetItems
@@ -219,13 +225,13 @@ class GetItemsRequest(Request):
 
     def execute (self):
         self.resp_node = self.request_server(debug=False)
-        self.resp_obj = GetItemsResponse(self.resp_node)
+        self.resp_obj = GetItemsResponse(self, self.resp_node)
 
         return self.resp_obj
 
 class GetItemsResponse(Response):
-    def __init__ (self, node=None):
-        Response.__init__(self, node)
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
 
         if node is not None:
             self.init_from_node(node)
