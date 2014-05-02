@@ -19,28 +19,23 @@
 
 from   pyews.soap import SoapClient, SoapMessageError, QName_M
 
-class EWSMessageError(SoapMessageError):
-    def __init__ (self, resp_code, xml_resp=None, node=None):
-        SoapMessageError.__init__(self, resp_code, xml_resp, node)
-        self.parse_error_msg()
-
-    def parse_error_msg (self):
-        if self.node is not None:
-            self.node = SoapClient.parse_xml(self.xml_resp)
-
-        if self.resp_code == 'ErrorSchemaValidation':
-            for i in self.node.iter('faultstring'):
-                if i is not None:
-                    self.msg_text = i.text
-        else:
-            for i in self.node.iter(QName_M('MessageText')):
-                if i is not None:
-                    self.msg_text = i.text
-
-        return None
+class EWSMessageError(Exception):
+    def __init__ (self, resp_obj):
+        self.resp_obj = resp_obj
 
     def __str__ (self):
-        return '%s - %s' % (self.resp_code, self.msg_text)
+        return '%s - %s' % (self.resp_obj.fault_code, self.resp_obj.fault_str)
+
+class EWSResponseError(Exception):
+    def __init__ (self, resp_obj):
+        self.resp_obj = resp_obj
+
+    def __str__ (self):
+        s = 'Errors: '
+        for i, err in self.resp_obj.errors.iteritems():
+            s += '\n  %02d - %s' % (i, str(err))
+
+        return s
 
 class EWSCreateFolderError(Exception):
     pass

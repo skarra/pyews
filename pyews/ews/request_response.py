@@ -17,13 +17,15 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
-import logging, traceback
+import logging
+import xml.etree.ElementTree as ET
 import pyews.utils as utils
 
 from   abc            import ABCMeta, abstractmethod
-from   pyews.soap     import SoapClient, QName_T, QName_M
+from   pyews.soap     import SoapClient, QName_S, QName_T, QName_M
 from   pyews.utils    import pretty_xml, clean_xml
 from   pyews.ews.contact    import Contact
+from   pyews.ews.errors     import EWSMessageError, EWSResponseError
 
 ##
 ## Base classes
@@ -56,6 +58,13 @@ class Request(object):
             logging.debug('Request: %s', pretty_xml(r))
         return self.ews.send(r, debug)
 
+    def assert_error (self):
+        if self.resp is not None:
+            return
+
+        if self.has_errors():
+            raise EWSResponseError(self.resp)
+
 class Response(object):
     def __init__ (self, req, node):
         self.req = req
@@ -65,10 +74,40 @@ class Response(object):
         self.war_cnt = 0
         self.errors = {}
 
-    def parse (self, tag):
+        ## Useful for some response objects.
+        self.includes_last = True
+
+        self.parse_for_faults()
+
+    def snarf_includes_last (self):
+        gna = SoapClient.get_node_attribute
+        last = gna(self.node, 'RootFolder', 'IncludesLastItemInRange')
+        self.includes_last = (last == 'true')
+
+        return self.includes_last
+
+    def parse_for_faults (self):
+        """
+        Check the response xml for any Faults in the XML request. Faults are
+        when the server has trouble even  understanding the request.
+        """
+
+        self.has_faults = False
+
+        for fault in self.node.iter(QName_S('Fault')):
+            self.fault_code = fault.find('faultcode').text
+            self.fault_str  = fault.find('faultstring').text
+            self.has_faults = True
+
+            raise EWSMessageError(self)
+
+    def parse_for_errors (self, tag):
         """
         Look in the present response node for all child nodes of given tag,
         while looking for errors and warnings as well.
+
+        Errors are when the server understood our message, but could not do
+        what was asked of it, for whatever reason.
         """
 
         assert self.node is not None
@@ -163,7 +202,7 @@ class GetFolderResponse(Response):
         node is a parsed XML Element containing the response
         """
 
-        self.parse(QName_M('GetFolderResponseMessage'))
+        self.parse_for_errors(QName_M('GetFolderResponseMessage'))
         for child in self.node.iter(QName_T('Folder')):
             self.folder_node = child
             break
@@ -182,7 +221,6 @@ class FindFoldersRequest(Request):
     ##
 
     def execute (self):
-        traceback.print_stack()
         self.resp_node = self.request_server(debug=False)
         self.resp_obj = FindFoldersResponse(self, self.resp_node)
 
@@ -202,7 +240,7 @@ class FindFoldersResponse(Response):
 
         from   pyews.ews.folder import Folder as F
 
-        self.parse(QName_M('FindFolderResponseMessage'))
+        self.parse_for_errors(QName_M('FindFolderResponseMessage'))
 
         self.folders = []
         for folders  in self.node.iter(QName_T('Folders')):
@@ -232,7 +270,6 @@ class FindItemsRequest(Request):
 class FindItemsResponse(Response):
     def __init__ (self, req, node=None):
         Response.__init__(self, req, node)
-        self.includes_last = True
 
         if node is not None:
             self.init_from_node(node)
@@ -241,12 +278,8 @@ class FindItemsResponse(Response):
         """
         node is a parsed XML Element containing the response
         """
-        gna = SoapClient.get_node_attribute
-
-        last = gna(node, 'RootFolder', 'IncludesLastItemInRange')
-        self.includes_last = (last == 'true')
-
-        self.parse(QName_M('FindItemResponseMessage'))
+        self.snarf_includes_last()
+        self.parse_for_errors(QName_M('FindItemResponseMessage'))
 
         self.items = []
         ## FIXME: As we support additional item types we will add more such
@@ -285,7 +318,7 @@ class GetItemsResponse(Response):
         node is a parsed XML Element containing the response
         """
 
-        self.parse(QName_M('GetItemResponseMessage'))
+        self.parse_for_errors(QName_M('GetItemResponseMessage'))
 
         self.items = []
         ## FIXME: As we support additional item types we will add more such
@@ -294,7 +327,7 @@ class GetItemsResponse(Response):
             self.items.append(Contact(self, resp_node=cxml))
 
 ##
-## Updatetems
+## UpdateItems
 ##
 
 class UpdateItemsRequest(Request):
@@ -308,7 +341,7 @@ class UpdateItemsRequest(Request):
         self.kwargs = kwargs
 
         self.items_map = {}
-        for item in kwargs['items']:
+        for item in self.kwargs['items']:
             self.items_map[item.itemid.value] = item
 
     ##

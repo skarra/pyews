@@ -23,8 +23,9 @@ import xml.etree.ElementTree as ET
 import utils
 from   utils import pretty_xml
 
-M_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/messages'
 E_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/errors'
+M_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/messages'
+S_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/'
 T_NAMESPACE = 'http://schemas.microsoft.com/exchange/services/2006/types'
 
 def unQName (name):
@@ -34,11 +35,14 @@ def unQName (name):
 def QName (namespace, name):
     return '{%s}%s' % (namespace, name)
 
+def QName_E (name):
+    return QName(E_NAMESPACE, name)
+
 def QName_M (name):
     return QName(M_NAMESPACE, name)
 
-def QName_E (name):
-    return QName(E_NAMESPACE, name)
+def QName_S (name):
+    return QName(S_NAMESPACE, name)
 
 def QName_T (name):
     return QName(T_NAMESPACE, name)
@@ -98,6 +102,22 @@ class SoapClient(object):
             return i.attrib[att] if i is not None else None
 
         return None
+
+    @staticmethod
+    def find_first_child (root, tag, ret='text'):
+        """
+        Look for the first child of root with specified tag and return it. If
+        ret is 'text' then the value of the node is returned, else, the node
+        is returned as an element.
+        """
+
+        for child in root.iter(tag):
+            if ret == 'text':
+                return child.text
+            else:
+                return child
+
+        return []
 
     @staticmethod
     def get_node_detail (soap_resp, root, node):
