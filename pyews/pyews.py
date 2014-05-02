@@ -29,14 +29,14 @@ from   ews.errors       import EWSMessageError, EWSCreateFolderError
 from   ews.errors       import EWSDeleteFolderError
 from   ews.folder       import Folder
 from   ews.contact      import Contact
-from   ews.request_response import GetItemsRequest, GetItemsResponse
-from   ews.request_response import FindItemsRequest, FindItemsResponse
-from   ews.request_response import UpdateItemsRequest, UpdateItemsResponse
+
+from ews.request_response import GetItemsRequest, GetItemsResponse
+from ews.request_response import FindItemsRequest, FindItemsResponse
+from ews.request_response import UpdateItemsRequest, UpdateItemsResponse
+from ews.request_response import SyncFolderItemsRequest, SyncFolderItemsResponse
 
 from   tornado import template
 from   soap import SoapClient, SoapMessageError, QName_T
-
-gna = SoapClient.get_node_attribute
 
 USER = u''
 PWD  = u''
@@ -206,6 +206,22 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:UpdateItems() - updating items....done')
         return resp.items
+
+    def SyncFolderItems (self, folder_id, sync_state):
+        """
+        Fetch updates from the specified folder_id.  items in the exchange store.
+        """
+
+        logging.info('pimdb_ex:SyncFolder() - fetching state...')
+
+        req = SyncFolderItemsRequest(self, folder_id=folder_id,
+                                     sync_state=sync_state,
+                                     batch_size=self.batch_size())
+        resp = req.execute()
+
+        logging.info('pimdb_ex:SyncFolder() - fetching state...done')
+
+        return resp.news, resp.mods, resp.dels
 
     ##
     ## Some internal messages

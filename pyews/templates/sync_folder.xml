@@ -1,0 +1,21 @@
+{% extends "base_request.xml" %}
+{% autoescape None %}
+{% block body %}
+    <m:SyncFolderItems>
+
+      <m:ItemShape>
+        <t:BaseShape>IdOnly</t:BaseShape>
+      </m:ItemShape>
+
+      <m:SyncFolderId>
+        <t:FolderId Id="{{ folder_id }}" />
+      </m:SyncFolderId>
+      
+      {% if sync_state is not None %}
+          <m:SyncState>{{ sync_state }}</m:SyncState>
+      {% end %}
+
+      <m:MaxChangesReturned>{{ batch_size }}</m:MaxChangesReturned>
+
+    </m:SyncFolderItems>
+{% end %}

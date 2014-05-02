@@ -19,6 +19,7 @@ REQ_FIND_ITEM = template_fn("find_item.xml")
 REQ_GET_ITEM = template_fn("get_item.xml")
 REQ_CREATE_ITEM = template_fn("create_item.xml")
 REQ_UPDATE_ITEM = template_fn("update_item.xml")
+REQ_SYNC_FOLDER = template_fn("sync_folder.xml")
 
 def pretty_xml (x):
     return xml.dom.minidom.parseString(x).toprettyxml()

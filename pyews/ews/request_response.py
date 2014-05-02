@@ -374,10 +374,70 @@ class UpdateItemsResponse(Response):
         node is a parsed XML Element containing the response. FIXME
         """
 
-        self.parse(QName_M('UpdateItemResponseMessage'))
+        self.parse_for_errors(QName_M('UpdateItemResponseMessage'))
 
         self.items = []
         ## FIXME: As we support additional item types we will add more such
         ## loops.
         for cxml in self.node.iter(QName_T('Contact')):
             self.items.append(Contact(self, resp_node=cxml))
+
+##
+## SyncFolder
+##
+
+class SyncFolderItemsRequest(Request):
+    """
+    Send an update request on the specified items to the server, and save the
+    returned changekeys back to the source item objects
+    """
+
+    def __init__ (self, ews, **kwargs):
+        Request.__init__(self, ews, template=utils.REQ_SYNC_FOLDER)
+        self.kwargs = kwargs
+
+        self.items_map = {}
+
+    ##
+    ## Implement the abstract methods
+    ##
+
+    def execute (self):
+        self.resp_node = self.request_server(debug=False)
+        self.resp_obj = SyncFolderItemsResponse(self, self.resp_node)
+
+        return self.resp_obj
+
+class SyncFolderItemsResponse(Response):
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
+
+        if node is not None:
+            self.init_from_node(node)
+
+    def init_from_node (self, node):
+        """
+        node is a parsed XML Element containing the response. FIXME
+        """
+
+        find_child = SoapClient.find_first_child
+
+        self.parse_for_errors(QName_M('SyncFolderItemsResponseMessage'))
+        self.snarf_includes_last()
+        self.sync_state = find_child(node, QName_M('SyncState'))
+
+        self.news = []
+        self.mods = []
+        self.dels = []
+
+        for create in node.iter(QName_T('Create')):
+            for child in find_child(create, QName_T('Contact'), ret='node'):
+                self.news.append(Contact(self.req.ews, resp_node=child))
+
+        for create in node.iter(QName_T('Update')):
+            for child in find_child(create, QName_T('Contact'), ret='node'):
+                self.mods.append(Contact(self.req.ews, resp_node=child))
+
+        for create in node.iter(QName_T('Delete')):
+            for child in find_child(create, QName_T('Contact'), ret='node'):
+                self.dels.append(Contact(self.req.ews, resp_node=child))

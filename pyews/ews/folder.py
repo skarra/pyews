@@ -138,7 +138,7 @@ class Folder:
         array of Contact objects
         """
 
-        new, mode, self.get_ews().UpdateItems(self.Id, sync_state)
+        return self.service.SyncFolderItems(self.Id, sync_state)
 
     def __str__ (self):
         s = 'Name: %s' % self.DisplayName
