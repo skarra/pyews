@@ -88,19 +88,16 @@ class SoapClient(object):
         return ET.fromstring(soap_resp)
 
     @staticmethod
-    def get_node_attribute (soap_resp, root, node, att):
+    def get_node_attribute (root, node, att):
         """
         From given soap response xml find and return the attributes of the
         specified node (first occurrence)
         """
 
-        if root is not None:
-            root = SoapClient.parse_xml(soap_resp)
-
         for i in root.iter(QName_M(node)):
-            return (i.attrib[att], root) if i is not None else (None, root)
+            return i.attrib[att] if i is not None else None
 
-        return (None, root)
+        return None
 
     @staticmethod
     def get_node_detail (soap_resp, root, node):

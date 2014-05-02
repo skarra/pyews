@@ -139,10 +139,9 @@ class ExchangeService(object):
                                         offset=i,
                                         folder_id=folder.Id)
             try:
-                resp, node = self.send(req)
-                last, ign = gna(resp, node, 'RootFolder',
-                                'IncludesLastItemInRange')
-                shells = self._construct_items(resp, node)
+                node = self.send(req)
+                last = gna(node, 'RootFolder', 'IncludesLastItemInRange')
+                shells = self._construct_items(node)
                 if shells is not None and len(shells) > 0:
                     ret += shells
 
@@ -226,10 +225,7 @@ class ExchangeService(object):
     ## Some internal messages
     ##
 
-    def _construct_items (self, resp, node=None):
-        if node is not None:
-            node = SoapClient.parse_xml(resp)
-
+    def _construct_items (self, node):
         ret = []
         ## As we support additional item types we will add more such loops.
         for cxml in node.iter(QName_T('Contact')):
