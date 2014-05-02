@@ -30,6 +30,7 @@ from   ews.errors       import EWSDeleteFolderError
 from   ews.folder       import Folder
 from   ews.contact      import Contact
 from   ews.request_response import GetItemsRequest, GetItemsResponse
+from   ews.request_response import FindItemsRequest, FindItemsResponse
 
 from   tornado import template
 from   soap import SoapClient, SoapMessageError, QName_T
@@ -134,21 +135,15 @@ class ExchangeService(object):
         i = 0
         ret = []
         while True:
-            req = self._render_template(utils.REQ_FIND_ITEM,
-                                        batch_size=self.batch_size(),
-                                        offset=i,
-                                        folder_id=folder.Id)
-            try:
-                node = self.send(req)
-                last = gna(node, 'RootFolder', 'IncludesLastItemInRange')
-                shells = self._construct_items(node)
-                if shells is not None and len(shells) > 0:
-                    ret += shells
+            req = FindItemsRequest(self, batch_size=self.batch_size(),
+                                   offset=i, folder_id=folder.Id)
+            resp = req.execute()
+            shells = resp.items
+            if shells is not None and len(shells) > 0:
+                ret += shells
 
-                if last == "true":
-                    break
-            except SoapMessageError as e:
-                raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
+            if resp.includes_last:
+                break
 
             i += self.batch_size()
             ## just a safety net to avoid inifinite loops
@@ -163,7 +158,6 @@ class ExchangeService(object):
             return self.GetItems([x.itemid for x in ret],
                                  eprops_xml=eprops_xml)
         else:
-            print pretty_xml(resp)
             return ret
 
     def GetItems (self, itemids, eprops_xml=[]):

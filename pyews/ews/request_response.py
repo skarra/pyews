@@ -21,7 +21,7 @@ import logging, traceback
 import pyews.utils as utils
 
 from   abc            import ABCMeta, abstractmethod
-from   pyews.soap     import QName_T, QName_M
+from   pyews.soap     import SoapClient, QName_T, QName_M
 from   pyews.utils    import pretty_xml, clean_xml
 from   pyews.ews.contact    import Contact
 
@@ -209,6 +209,50 @@ class FindFoldersResponse(Response):
             for child in folders:
                 self.folders.append(F(self.req.ews, None, node=child))
             break
+
+##
+## FindItems
+##
+
+class FindItemsRequest(Request):
+    def __init__ (self, ews, **kwargs):
+        Request.__init__(self, ews, template=utils.REQ_FIND_ITEM)
+        self.kwargs = kwargs
+
+    ##
+    ## Implement the abstract methods
+    ##
+
+    def execute (self):
+        self.resp_node = self.request_server(debug=False)
+        self.resp_obj = FindItemsResponse(self, self.resp_node)
+
+        return self.resp_obj
+
+class FindItemsResponse(Response):
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
+        self.includes_last = True
+
+        if node is not None:
+            self.init_from_node(node)
+
+    def init_from_node (self, node):
+        """
+        node is a parsed XML Element containing the response
+        """
+        gna = SoapClient.get_node_attribute
+
+        last = gna(node, 'RootFolder', 'IncludesLastItemInRange')
+        self.includes_last = (last == 'true')
+
+        self.parse(QName_M('FindItemResponseMessage'))
+
+        self.items = []
+        ## FIXME: As we support additional item types we will add more such
+        ## loops.
+        for cxml in self.node.iter(QName_T('Contact')):
+            self.items.append(Contact(self, resp_node=cxml))
 
 ##
 ## GetItems
