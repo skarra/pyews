@@ -80,7 +80,10 @@ class Folder:
         req = FindFoldersRequest(self.service, folder_ids=[(root_id, ck)],
                                  traversal='Deep' if recursive else 'Shallow')
         resp = req.execute()
-        return [x for x in resp.folders if x.FolderClass in types]
+        if types is not None:
+            return [x for x in resp.folders if x.FolderClass in types]
+        else:
+            return resp.folders
 
     ##
     ## Class methods
