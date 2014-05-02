@@ -111,14 +111,18 @@ class Folder:
         # assert self.Id
 
         idelem = root.find(QName_T('FolderId'))
-        f.Id = idelem.attrib['Id']
-        f.ChangeKey = idelem.attrib['ChangeKey']
+        self.Id = idelem.attrib['Id']
+        self.ChangeKey = idelem.attrib['ChangeKey']
 
-        self.DisplayName      = root.find(QName_T('DisplayName')).text
-        self.ChildFolderCount = root.find(QName_T('ChildFolderCount')).text
-        self.FolderClass      = root.find(QName_T('FolderClass')).text
-        self.TotalCount       = root.find(QName_T('TotalCount')).text
-        self.TotalCount       = int(f.TotalCount)
+        self.DisplayName      = self._node_text(root, QName_T('DisplayName'))
+        self.ChildFolderCount = self._node_text(root, QName_T('ChildFolderCount'))
+        self.FolderClass      = self._node_text(root, QName_T('FolderClass'))
+        self.TotalCount       = self._node_text(root, QName_T('TotalCount'))
+        self.TotalCount       = int(self.TotalCount)
+
+    def _node_text (self, node, tag):
+        c = node.find(tag)
+        return c.text if c is not None else None
 
     ##
     ## External Methods
