@@ -414,7 +414,7 @@ class GetItemsRequest(Request):
     ##
 
     def execute (self):
-        self.resp_node = self.request_server(debug=False)
+        self.resp_node = self.request_server(debug=True)
         self.resp_obj = GetItemsResponse(self, self.resp_node)
 
         return self.resp_obj

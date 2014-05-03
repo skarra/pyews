@@ -17,13 +17,14 @@
 ## You should have a copy of the license in the doc/ directory of pyews.  If
 ## not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from item    import Item, Field, FieldURI, ExtendedProperty, LastModifiedTime
 from pyews.soap    import SoapClient, unQName, QName_T
 from pyews.utils   import pretty_xml
 from pyews.ews     import mapitags
 from pyews.ews.data import MapiPropertyTypeType, MapiPropertyTypeTypeInv
 from pyews.ews.data import GenderType
-from    xml.sax.saxutils import escape
+from xml.sax.saxutils import escape
 
 class CField(Field):
     def __init__ (self, tag=None, text=None):
@@ -279,9 +280,30 @@ class PhoneNumbers(CField):
         s += '; '.join([str(x) for x in self.entries])
         return s
 
+class BusinessHomePage(CField):
+    def __init__ (self, text=None):
+        CField.__init__(self, 'BusinessHomePage', text)
+
 ##
 ## Extended Properties
 ##
+
+class PersonalHomePage(ExtendedProperty):
+    def __init__ (self, node=None, text=None):
+        pid  = mapitags.PROP_ID(mapitags.PR_PERSONAL_HOME_PAGE)
+        ptype = mapitags.PROP_TYPE(mapitags.PR_PERSONAL_HOME_PAGE)
+        ExtendedProperty.__init__(self, node=node, ptag=pid,
+                                  ptype=MapiPropertyTypeType[ptype])
+        self.val.value = text
+
+    def write_to_xml (self):
+        if self.val.value is not None:
+            return ExtendedProperty.write_to_xml(self)
+        else:
+            return ''
+
+    def __str__ (self):
+        return self.val.value
 
 class Gender(ExtendedProperty):
     def __init__ (self, node=None, text=GenderType.Unspecified):
@@ -289,6 +311,7 @@ class Gender(ExtendedProperty):
         ptype = mapitags.PROP_TYPE(mapitags.PR_GENDER)
         ExtendedProperty.__init__(self, node=node, ptag=ptag,
                                   ptype=MapiPropertyTypeType[ptype])
+        self.val.value = str(text)
 
     def write_to_xml (self):
         if self.val.value is not None:
@@ -298,7 +321,7 @@ class Gender(ExtendedProperty):
 
     def __str__ (self):
         v = self.val.value
-        if v is None:
+        if v is None or v == 'None':
             return 'Unspecified'
         elif int(v) == GenderType.Female:
             return 'Female'
@@ -334,8 +357,10 @@ class Contact(Item):
         self.notes = Notes()
         self.emails = EmailAddresses()
         self.phones = PhoneNumbers()
+        self.business_home_page = BusinessHomePage()
 
         self.gender = Gender()
+        self.personal_home_page = PersonalHomePage()
 
         self._init_from_resp()
 
@@ -383,6 +408,8 @@ class Contact(Item):
                 self.emails.populate_from_node(child)
             elif tag == 'PhoneNumbers':
                 self.phones.populate_from_node(child)
+            elif tag == 'BusinessHomePage':
+                self.business_home_page.value = child.text
             elif tag == 'ExtendedProperty':
                 self.add_extended_property(node=child)
 
@@ -444,6 +471,7 @@ class Contact(Item):
         if node is not None and tag is None:
             uri = node.find(QName_T('ExtendedFieldURI'))
             tag = ExtendedProperty.get_prop_tag_from_xml(uri)
+            value = node.find(QName_T('Value')).text
 
         eprop = None
 
@@ -453,6 +481,9 @@ class Contact(Item):
         elif tag == mapitags.PR_GENDER:
             self.gender = Gender(node=node, text=value)
             eprop = self.gender
+        elif tag == mapitags.PR_PERSONAL_HOME_PAGE:
+            self.personal_home_page = PersonalHomePage(node=node, text=value)
+            eprop = self.personal_home_page
         else:
             eprop = ExtendedProperty(node=node, ptag=tag)
             eprop.value = value
@@ -465,11 +496,13 @@ class Contact(Item):
         ## Note that children is used for generating xml representation of
         ## this contact for CreateItem and update operations. The order of
         ## these fields is critical. I know, it's crazy.
-        self.children = [self.notes] + self.eprops + [self.gender, self.file_as,
+        self.children = [self.notes] + self.eprops + [self.gender,
+                         self.personal_home_page, self.file_as,
                          self.display_name, cn.given_name, cn.initials,
                          cn.middle_name, cn.nickname, self.company_name,
                          self.emails, self.phones, self.assistant_name,
-                         self.birthday, self.department, self.job_title,
+                         self.birthday, self.business_home_page,
+                         self.department, self.job_title,
                          self.manager, self.spouse_name, cn.surname,
                          self.anniversary, self.alias]
 
