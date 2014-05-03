@@ -1,5 +1,5 @@
 
-import os, re, urllib2, xml.dom.minidom
+import md5, os, re, urllib2, xml.dom.minidom
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 REQUESTS_DIR = os.path.abspath(os.path.join(CUR_DIR, "templates"))
@@ -26,6 +26,15 @@ def pretty_xml (x):
     lines = x.splitlines()
     lines = [s for s in lines if not re.match(s.strip(), '^\s*$')]
     return os.linesep.join(lines)
+
+def pretty_eid (x):
+    """
+    Returns a 32-digit md5 digest of the input. This is useful for printing
+    really long and butt-ugly Base64-encoded Entry IDs used by
+    Exchange/Outlook
+    """
+
+    return md5.new(x).hexdigest()
 
 def safe_int (s):
     """Convert string s into an integer taking into account if s is a hex
