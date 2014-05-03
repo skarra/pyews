@@ -433,13 +433,13 @@ class SyncFolderItemsResponse(Response):
         self.dels = []
 
         for create in node.iter(QName_T('Create')):
-            for child in find_child(create, QName_T('Contact'), ret='node'):
+            for child in create:
                 self.news.append(Contact(self.req.ews, resp_node=child))
 
         for create in node.iter(QName_T('Update')):
-            for child in find_child(create, QName_T('Contact'), ret='node'):
+            for child in create:
                 self.mods.append(Contact(self.req.ews, resp_node=child))
 
         for create in node.iter(QName_T('Delete')):
-            for child in find_child(create, QName_T('Contact'), ret='node'):
+            for child in create:
                 self.dels.append(Contact(self.req.ews, resp_node=child))
