@@ -202,6 +202,40 @@ class GetFolderResponse(Response):
             break
 
 ##
+## CreateItems
+##
+
+class CreateItemsRequest(Request):
+    def __init__ (self, ews, **kwargs):
+        Request.__init__(self, ews, template=utils.REQ_CREATE_ITEM)
+        self.kwargs = kwargs
+
+    ##
+    ## Implement the abstract methods
+    ##
+
+    def execute (self):
+        self.resp_node = self.request_server(debug=True)
+        self.resp_obj = CreateItemsResponse(self, self.resp_node)
+
+        return self.resp_obj
+
+class CreateItemsResponse(Response):
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
+
+        if node is not None:
+            self.init_from_node(node)
+
+    def init_from_node (self, node):
+        """
+        node is a parsed XML Element containing the response
+        """
+
+        self.parse_for_errors(QName_M('CreatItemResponseMessage'))
+        ## FIXME: Parse the resuls and update the ItemId and ChangeKey
+
+##
 ## DeleteItems
 ##
 
