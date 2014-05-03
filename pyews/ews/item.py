@@ -25,6 +25,7 @@ from    pyews.ews       import mapitags
 from    pyews.ews.data  import MapiPropertyTypeType, MapiPropertyTypeTypeInv
 
 import  xml.etree.ElementTree as ET
+from    xml.sax.saxutils import escape
 import  logging
 
 gnd = SoapClient.get_node_detail
@@ -80,7 +81,7 @@ class Field:
         return ' '.join(ats)
 
     def value_as_xml (self):
-        return self.value if self.value is not None else ''
+        return escape(self.value) if self.value is not None else ''
 
     def children_as_xml (self):
         self.children = self.get_children()
@@ -297,7 +298,7 @@ class ExtendedProperty(Field):
         s += '\n<t:Contact>'
         s += '\n  <t:ExtendedProperty>'
         s += '\n      %s' % ef
-        s += '\n      <t:Value>%s</t:Value>' % self.value
+        s += '\n      <t:Value>%s</t:Value>' % escape(self.value)
         s += '\n  </t:ExtendedProperty>'
         s += '\n</t:Contact>'
 

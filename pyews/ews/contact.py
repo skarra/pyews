@@ -23,8 +23,7 @@ from pyews.utils   import pretty_xml
 from pyews.ews     import mapitags
 from pyews.ews.data import MapiPropertyTypeType, MapiPropertyTypeTypeInv
 from pyews.ews.data import GenderType
-
-gnd = SoapClient.get_node_detail
+from    xml.sax.saxutils import escape
 
 class CField(Field):
     def __init__ (self, tag=None, text=None):
@@ -36,7 +35,7 @@ class CField(Field):
         s = '<t:FieldURI FieldURI="%s"/>' % self.furi
         s += '\n<t:Contact>'
         s += '\n  <t:%s %s>%s</t:%s>' % (self.tag, ' '.join(ats),
-                                         self.value, self.tag)
+                                         escape(self.value), self.tag)
         s += '\n</t:Contact>'
 
         return s
@@ -209,7 +208,7 @@ class EmailAddresses(CField):
             s += '\n<t:Contact>'
             s += '\n  <t:EmailAddresses>'
             s += '\n    <t:Entry Key="%s">%s</t:Entry>' % (email.attrib['Key'],
-                                                           email.value)
+                                                           escape(email.value))
             s += '\n  </t:EmailAddresses>'
             s += '\n</t:Contact>'
             ret.append(s)
