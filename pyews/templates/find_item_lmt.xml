@@ -1,0 +1,36 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:FindItem Traversal="Shallow">
+      <m:ItemShape>
+        <t:BaseShape>IdOnly</t:BaseShape>
+
+        <t:AdditionalProperties>
+            <t:FieldURI FieldURI="contacts:DisplayName"/>
+            <t:ExtendedFieldURI
+                 PropertyType="{{ ews_pt(mt.PR_LAST_MODIFICATION_TIME) }}"
+                 PropertyTag="{{ ews_pid(mt.PR_LAST_MODIFICATION_TIME) }}" />
+        </t:AdditionalProperties>
+      </m:ItemShape>
+
+      <m:IndexedPageItemView MaxEntriesReturned="{{ batch_size }}" 
+			     Offset="{{ offset }}"
+			     BasePoint="Beginning" />
+      <m:Restriction>
+        <t:IsGreaterThan>
+             <t:ExtendedFieldURI
+                  PropertyType="{{ ews_pt(mt.PR_LAST_MODIFICATION_TIME) }}"
+                  PropertyTag="{{ ews_pid(mt.PR_LAST_MODIFICATION_TIME) }}" />
+    
+             <t:FieldURIOrConstant>
+                 <t:Constant Value="{{ lmt }}" />
+             </t:FieldURIOrConstant>
+        </t:IsGreaterThan>
+      </m:Restriction>
+
+      <m:ParentFolderIds>
+        <t:FolderId Id="{{ folder_id }} " />
+      </m:ParentFolderIds>
+    </m:FindItem>
+{% end %}
+

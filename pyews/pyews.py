@@ -32,6 +32,7 @@ from   ews.contact      import Contact
 
 from ews.request_response import GetItemsRequest, GetItemsResponse
 from ews.request_response import FindItemsRequest, FindItemsResponse
+from ews.request_response import FindItemsLMTRequest, FindItemsLMTResponse
 from ews.request_response import UpdateItemsRequest, UpdateItemsResponse
 from ews.request_response import SyncFolderItemsRequest, SyncFolderItemsResponse
 
@@ -160,6 +161,46 @@ class ExchangeService(object):
                                  eprops_xml=eprops_xml)
         else:
             return ret
+
+    def FindItemsLMT (self, folder, lmt):
+        """
+        Fetch all the items in the given folder that were last modified at or
+        after the provided timestamp (lmt). We return an array of Item objects
+        of the right type. It will only contain the following fields:
+
+        - ID
+        - ChangeKey
+        - DisplayName (if it is a contact)
+        - Last Modified time
+
+        """
+
+        logging.info('pimdb_ex:FindItemsLMT() - fetching items in folder %s...',
+                     folder.DisplayName)
+
+        i = 0
+        ret = []
+        while True:
+            req = FindItemsLMTRequest(self, batch_size=self.batch_size(),
+                                      offset=i, folder_id=folder.Id, lmt=lmt)
+            resp = req.execute()
+            shells = resp.items
+            if shells is not None and len(shells) > 0:
+                ret += shells
+
+            if resp.includes_last:
+                break
+
+            i += self.batch_size()
+            ## just a safety net to avoid inifinite loops
+            if i >= folder.TotalCount:
+                logging.warning('pimdb_ex.FindItemsLMT(): Breaking strange loop')
+                break
+
+        logging.info('pimdb_ex:FindItemsLMT() - fetching items in folder %s...done',
+                     folder.DisplayName)
+
+        return ret
 
     def GetItems (self, itemids, eprops_xml=[]):
         """
