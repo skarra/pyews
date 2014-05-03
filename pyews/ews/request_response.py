@@ -23,7 +23,7 @@ import pyews.utils as utils
 
 from   abc            import ABCMeta, abstractmethod
 from   pyews.soap     import SoapClient, QName_S, QName_T, QName_M
-from   pyews.utils    import pretty_xml, clean_xml
+from   pyews.utils    import pretty_xml
 from   pyews.ews.contact    import Contact
 from   pyews.ews.errors     import EWSMessageError, EWSResponseError
 
@@ -54,8 +54,10 @@ class Request(object):
 
     def request_server (self, debug=False):
         r = self.ews.loader.load(self.template).generate(**self.kwargs)
+        r = utils.pretty_xml(r)
+
         if debug:
-            logging.debug('Request: %s', pretty_xml(r))
+            logging.debug('Request: %s', r)
         return self.ews.send(r, debug)
 
     def assert_error (self):

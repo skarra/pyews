@@ -21,7 +21,7 @@
 import logging, re
 
 import utils
-from   utils            import pretty_xml, clean_xml
+from   utils            import pretty_xml
 from   ews.autodiscover import EWSAutoDiscover, ExchangeAutoDiscoverError
 from   ews.data         import DistinguishedFolderId, WellKnownFolderName
 from   ews.data         import FolderClass
@@ -185,7 +185,7 @@ class ExchangeService(object):
         req = self._render_template(utils.REQ_CREATE_ITEM,
                                     folder_id=folder_id, items=items)
         try:
-            req = clean_xml(req)
+            req = pretty_xml(req)
             print req
             resp, node = self.send(req)
             logging.debug('%s', pretty_xml(resp))

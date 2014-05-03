@@ -1,5 +1,5 @@
 
-import os, urllib2, xml.dom.minidom
+import os, re, urllib2, xml.dom.minidom
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 REQUESTS_DIR = os.path.abspath(os.path.join(CUR_DIR, "templates"))
@@ -22,19 +22,10 @@ REQ_UPDATE_ITEM = template_fn("update_item.xml")
 REQ_SYNC_FOLDER = template_fn("sync_folder.xml")
 
 def pretty_xml (x):
-    return xml.dom.minidom.parseString(x).toprettyxml()
-
-def clean_xml (x):
-    return x
-    strs = x.split('\n')
-    resp = []
-    for line in strs:
-        if not line.isspace() and line != '':
-            print "Processing '%s'" % line
-            resp.append(line)
-
-    resp = ''.join(resp)
-    return pretty_xml(resp)
+    x = xml.dom.minidom.parseString(x).toprettyxml()
+    lines = x.splitlines()
+    lines = [s for s in lines if not re.match(s.strip(), '^\s*$')]
+    return os.linesep.join(lines)
 
 def safe_int (s):
     """Convert string s into an integer taking into account if s is a hex
