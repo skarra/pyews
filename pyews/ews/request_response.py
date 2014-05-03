@@ -103,7 +103,7 @@ class Response(object):
 
             raise EWSMessageError(self)
 
-    def parse_for_errors (self, tag):
+    def parse_for_errors (self, tag, succ_func=None):
         """
         Look in the present response node for all child nodes of given tag,
         while looking for errors and warnings as well.
@@ -126,6 +126,8 @@ class Response(object):
                 logging.error('Ignoring a warning response class.')
             else:
                 self.suc_cnt += 1
+                if succ_func is not None:
+                    succ_func(i, gfrm)
 
             i += 1
 
@@ -232,8 +234,18 @@ class CreateItemsResponse(Response):
         node is a parsed XML Element containing the response
         """
 
-        self.parse_for_errors(QName_M('CreatItemResponseMessage'))
-        ## FIXME: Parse the resuls and update the ItemId and ChangeKey
+        self.parse_for_errors(QName_M('CreateItemResponseMessage'),
+                              succ_func=self.set_itemids)
+
+    def set_itemids (self, index, node):
+        item = self.req.kwargs['items'][index]
+        con_node = SoapClient.find_first_child(node, QName_T('ItemId'),
+                                               ret='node')
+        itemid = con_node.attrib['Id']
+        ck     = con_node.attrib['ChangeKey']
+
+        item.itemid.set(itemid)
+        item.change_key.set(ck)
 
 ##
 ## DeleteItems
