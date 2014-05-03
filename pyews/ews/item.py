@@ -566,7 +566,6 @@ class Item(Field):
 
         ## Look for known extended properties
         v = ExtendedProperty.get_variant_from_xml(uri)
-        logging.debug('Processing ExtenddProperty variant: %s', v)
         if v == PropVariant.TAGGED:
             self.add_tagged_property(node=node)
         elif v == PropVariant.NAMED_INT:
@@ -591,9 +590,6 @@ class Item(Field):
         else:
             self.eprops_named_str[eprop.psetid] = {eprop.pname : eprop}
 
-        logging.debug('Added named str prop psetid : %s, pname: %s',
-                      eprop.psetid, eprop.pname)
-
     def add_named_int_property (self, node=None, psetid=None, pid=None, ptype=None,
                                 value=None):
         eprop = ExtendedProperty(node=node, psetid=psetid, pid=pid,
@@ -607,9 +603,6 @@ class Item(Field):
             self.eprops_named_int[eprop.psetid].update({eprop.pid : eprop})
         else:
             self.eprops_named_int[eprop.psetid] = {eprop.pid : eprop}
-
-        logging.debug('Added named int prop psetid : %s, pid: 0x%x',
-                      eprop.psetid, eprop.pid)
 
     def get_tagged_property (self, tag):
         """
