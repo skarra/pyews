@@ -537,16 +537,14 @@ class Item(Field):
         sets = []
         dels = []
 
-        print 'processing children: ', self.get_children()
-
         for child in self.get_children():
             if child.has_updates():
                 sets.append(child)
             else:
                 dels.append(child)
 
-        print 'Sets: ', sets
-        print 'Dels: ', dels
+        # print 'Sets: ', sets
+        # print 'Dels: ', dels
         return [], sets, dels
 
     def get_extended_properties (self):
