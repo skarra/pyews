@@ -32,9 +32,11 @@ class CField(Field):
         self.furi = ('contacts:%s' % tag) if tag else None
 
     def write_to_xml_update (self):
+        ats = ['%s="%s"' % (k, v) for k, v in self.attrib.iteritems() if v]
         s = '<t:FieldURI FieldURI="%s"/>' % self.furi
         s += '\n<t:Contact>'
-        s += '\n  <t:%s>%s</t:%s>' % (self.tag, self.value, self.tag)
+        s += '\n  <t:%s %s>%s</t:%s>' % (self.tag, ' '.join(ats),
+                                         self.value, self.tag)
         s += '\n</t:Contact>'
 
         return s
@@ -199,8 +201,9 @@ class EmailAddresses(CField):
         return len(self.entries) > 0
 
     def write_to_xml_update (self):
-        s = ''
+        ret = []
         for email in self.entries:
+            s = ''
             s += '\n<t:IndexedFieldURI FieldURI="contacts:EmailAddress" '
             s += 'FieldIndex="%s"/>' % email.attrib['Key']
             s += '\n<t:Contact>'
@@ -209,8 +212,10 @@ class EmailAddresses(CField):
                                                            email.value)
             s += '\n  </t:EmailAddresses>'
             s += '\n</t:Contact>'
+            ret.append(s)
 
-        return s
+        t = '\n</t:SetItemField>\n<t:SetItemField>'
+        return t.join(ret)
 
     def __str__ (self):
         s = '%s Addresses: ' % len(self.entries)
@@ -254,8 +259,9 @@ class PhoneNumbers(CField):
         return len(self.entries) > 0
 
     def write_to_xml_update (self):
-        s = ''
+        ret = []
         for phone in self.entries:
+            s = ''
             s += '\n<t:IndexedFieldURI FieldURI="contacts:PhoneNumber" '
             s += 'FieldIndex="%s"/>' % phone.attrib['Key']
             s += '\n<t:Contact>'
@@ -264,8 +270,10 @@ class PhoneNumbers(CField):
                                                            phone.value)
             s += '\n  </t:PhoneNumbers>'
             s += '\n</t:Contact>'
+            ret.append(s)
 
-        return s
+        t = '\n</t:SetItemField>\n<t:SetItemField>'
+        return t.join(ret)
 
     def __str__ (self):
         s = '%s Numbers: ' % len(self.entries)
