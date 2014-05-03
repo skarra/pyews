@@ -134,11 +134,12 @@ class Folder:
     def get_updates (self, sync_state):
         """
         Given a sync_state ID, fetch all the changes since that time. This
-        methods returns a tuple (new, mod, del) -> where each element is an
-        array of Contact objects
+        methods returns a tuple (new, mod, del, new_sync_state) -> where each
+        element is an array of Contact objects
         """
 
-        return self.service.SyncFolderItems(self.Id, sync_state)
+        resp = self.service.SyncFolderItems(self.Id, sync_state)
+        return resp.news, resp.mods, resp.dels, resp.sync_state
 
     def __str__ (self):
         s = 'Name: %s' % self.DisplayName

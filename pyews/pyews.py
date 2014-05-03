@@ -209,7 +209,7 @@ class ExchangeService(object):
 
     def SyncFolderItems (self, folder_id, sync_state):
         """
-        Fetch updates from the specified folder_id.  items in the exchange store.
+        Fetch updates from the specified folder_id. 
         """
 
         logging.info('pimdb_ex:SyncFolder() - fetching state...')
@@ -221,7 +221,7 @@ class ExchangeService(object):
 
         logging.info('pimdb_ex:SyncFolder() - fetching state...done')
 
-        return resp.news, resp.mods, resp.dels
+        return resp
 
     ##
     ## Some internal messages
