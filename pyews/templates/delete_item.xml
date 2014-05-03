@@ -1,0 +1,11 @@
+{% extends "base_request.xml" %}
+
+{% block body %}
+    <m:DeleteItem DeleteType="MoveToDeletedItems">
+      <m:ItemIds>
+        {% for itemid in itemids %}
+          <t:ItemId Id="{{itemid }}"/>
+        {% end %}
+      </m:ItemIds>
+    </m:DeleteItem>
+{% end %}

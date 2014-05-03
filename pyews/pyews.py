@@ -32,6 +32,7 @@ from   ews.contact      import Contact
 
 from ews.request_response import GetItemsRequest, GetItemsResponse
 from ews.request_response import FindItemsRequest, FindItemsResponse
+from ews.request_response import DeleteItemsRequest, DeleteItemsResponse
 from ews.request_response import FindItemsLMTRequest, FindItemsLMTResponse
 from ews.request_response import UpdateItemsRequest, UpdateItemsResponse
 from ews.request_response import SyncFolderItemsRequest, SyncFolderItemsResponse
@@ -234,6 +235,15 @@ class ExchangeService(object):
             raise EWSMessageError(e.resp_code, e.xml_resp, e.node)
 
         logging.info('pimdb_ex:CreateItems() - creating items....done')
+
+    def DeleteItems (self, itemids):
+        """Delete items in the exchange store."""
+
+        logging.info('pimdb_ex:DeleteItems() - deleting items....')
+        req = DeleteItemsRequest(self, itemids=itemids)
+        logging.info('pimdb_ex:DeleteItems() - deleting items....done')
+
+        return req.execute()
 
     def UpdateItems (self, items):
         """

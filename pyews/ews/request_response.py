@@ -129,14 +129,6 @@ class Response(object):
 
             i += 1
 
-        ## Some nodes have a tag called faultcode. Here is some old code that
-        ## might be handy at some point
-
-        # for i in root.iter('faultcode'):
-        #     if i is not None:
-        #         ## hack alert: stripping out the namespace prefix...
-        #         return i.text[2:]
-
         if self.has_errors():
             logging.error('Response.parse: Found %d errors', self.err_cnt)
             for ind, err in self.errors.iteritems():
@@ -208,6 +200,39 @@ class GetFolderResponse(Response):
         for child in self.node.iter(QName_T('Folder')):
             self.folder_node = child
             break
+
+##
+## DeleteItems
+##
+
+class DeleteItemsRequest(Request):
+    def __init__ (self, ews, **kwargs):
+        Request.__init__(self, ews, template=utils.REQ_DELETE_ITEM)
+        self.kwargs = kwargs
+
+    ##
+    ## Implement the abstract methods
+    ##
+
+    def execute (self):
+        self.resp_node = self.request_server(debug=True)
+        self.resp_obj = DeleteItemsResponse(self, self.resp_node)
+
+        return self.resp_obj
+
+class DeleteItemsResponse(Response):
+    def __init__ (self, req, node=None):
+        Response.__init__(self, req, node)
+
+        if node is not None:
+            self.init_from_node(node)
+
+    def init_from_node (self, node):
+        """
+        node is a parsed XML Element containing the response
+        """
+
+        self.parse_for_errors(QName_M('DeleteItemResponseMessage'))
 
 ##
 ## FindFolders
