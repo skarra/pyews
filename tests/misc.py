@@ -44,10 +44,11 @@ def main ():
     # test_find_item(cons[0].itemid.text)
 
     # test_create_item(ews, cfs[0].Id)
-    # cons = test_list_items(root, ids_only=True)
 
-    iid = 'AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA'
-    c = test_find_item(iid)
+    cons = test_list_items(root, ids_only=True)
+
+    # iid = 'AAAcAHNrYXJyYUBhc3luay5vbm1pY3Jvc29mdC5jb20ARgAAAAAA6tvK38NMgEiPrdzycecYvAcACf/6iQHYvUyNzrlQXzUQNgAAAAABDwAACf/6iQHYvUyNzrlQXzUQNgAAHykxIwAA'
+    # c = test_find_item(iid)
     # test_update_item(iid, c.change_key.value, c.parent_fid)
 
 def bind ():
