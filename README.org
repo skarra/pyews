@@ -4,6 +4,38 @@ A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Orig
 
 * Status
 
+** Next things to do
+
+   - bulk clear sync tags
+
+   - support --exuser and --expwd command line flags
+   - support 'default' storeid to get URL through autodisc
+   - support 'default' as foid
+
+*** Fields that are not yet supported
+
+    - IMs
+    - postal addresses
+
+** Fri May 02 12:53:40 IST 2014
+
+   The whole update items and sync state stuff is a bit messsed up. I think I
+   tried to edit something and messed up the updateitems methods thiknking
+   they are the sync_state method. So some damage needs to be undone.
+
+** Wed Apr 30 15:18:22 IST 2014
+
+   Stuck with prep sync lists and stuff like that.
+
+** Fri Apr 18 18:56:34 IST 2014
+
+   Able to create contacts with some of the standard field types. Now on to
+   more complex, or 'Extended' Properties. (Done :)
+
+** Thu Apr 03 23:44:52 IST 2014
+
+   New classes for Item and Contact to wrap around the EWS XML. Some problems
+   with properly parsing and constructing those objects. Need to look into it.
 
 ** Sun Mar 30 18:35:00 IST 2014
 
@@ -24,11 +56,68 @@ A simple python wrapper for use with Microsoft Exchange Web Services (EWS). Orig
    scenarios. So for now the autodiscover code is incomplete and, well, a bit
    shoddy. Sorry.
 
+* Element class hierarchy
+
+** My own half assed attempt
+
+  XMLElement
+  -> Parent of Item
+  -> parent of Property
+
+  Property
+  -> parent of ReadOnlyProperty
+  -> parent of ReadWriteProperty
+
+  Item
+  -> contains list of properties
+  -> parent of Contact
+
+
 * Links to important reference docs
 
 - http://msdn.microsoft.com/en-us/library/office/jj900168.aspx Start Using Web Services in Exchange
 
 * Time Tracker
+
+ #+BEGIN: clocktable :maxlevel 2 :scope subtree
+ Clock summary at [2014-05-04 Sun 00:12]
+ 
+ | Headline     | Time    |       |
+ |--------------+---------+-------|
+ | *Total time* | *44:37* |       |
+ |--------------+---------+-------|
+ | Time Tracker | 44:37   |       |
+ | \__ Apr 2014 |         | 28:42 |
+ | \__ Mar 2014 |         | 15:55 |
+ #+END:
+
+
+** Apr 2014
+   CLOCK: [2014-05-04 Sun 10:02]
+   CLOCK: [2014-05-03 Sat 22:03]--[2014-05-04 Sun 00:12] =>  2:09
+   CLOCK: [2014-05-03 Sat 16:36]--[2014-05-03 Sat 18:33] =>  1:57
+   CLOCK: [2014-05-03 Sat 13:29]--[2014-05-03 Sat 16:29] =>  3:00
+   CLOCK: [2014-05-03 Sat 00:34]--[2014-05-03 Sat 01:53] =>  1:19
+   CLOCK: [2014-05-01 Thu 12:18]--[2014-05-01 Thu 12:27] =>  0:09
+   CLOCK: [2014-05-01 Thu 09:35]--[2014-05-01 Thu 10:47] =>  1:12
+   CLOCK: [2014-05-01 Thu 09:06]--[2014-05-01 Thu 09:20] =>  0:14
+   CLOCK: [2014-04-29 Tue 23:01]--[2014-04-30 Wed 00:28] =>  1:27
+   CLOCK: [2014-04-29 Tue 22:00]--[2014-04-29 Tue 22:42] =>  0:42
+   CLOCK: [2014-04-29 Tue 12:41]--[2014-04-29 Tue 13:35] =>  0:54
+   CLOCK: [2014-04-28 Mon 07:37]--[2014-04-28 Mon 08:31] =>  0:54
+   CLOCK: [2014-04-28 Mon 05:30]--[2014-04-28 Mon 07:37] =>  2:07
+   CLOCK: [2014-04-27 Sun 12:43]--[2014-04-27 Sun 13:43] =>  1:00
+   CLOCK: [2014-04-27 Sun 12:05]--[2014-04-27 Sun 12:28] =>  0:23
+   CLOCK: [2014-04-27 Sun 10:19]--[2014-04-27 Sun 11:25] =>  1:06
+   CLOCK: [2014-04-26 Sat 18:57]--[2014-04-26 Sat 19:24] =>  0:27
+   CLOCK: [2014-04-25 Fri 10:55]--[2014-04-25 Fri 12:33] =>  1:38
+   CLOCK: [2014-04-25 Fri 09:00]--[2014-04-25 Fri 09:03] =>  0:03
+   CLOCK: [2014-04-24 Thu 21:24]--[2014-04-25 Fri 00:01] =>  2:37
+   CLOCK: [2014-04-24 Thu 18:48]--[2014-04-24 Thu 19:07] =>  0:19
+   CLOCK: [2014-04-24 Thu 17:50]--[2014-04-24 Thu 18:45] =>  0:55
+   CLOCK: [2014-04-24 Thu 12:44]--[2014-04-24 Thu 13:38] =>  0:54
+   CLOCK: [2014-04-19 Sat 23:49]--[2014-04-20 Sun 01:09] =>  1:20
+   CLOCK: [2014-04-18 Fri 16:59]--[2014-04-18 Fri 18:55] =>  1:56
 
 ** Mar 2014
    CLOCK: [2014-03-31 Mon 15:40]--[2014-03-31 Mon 15:44] =>  0:04
