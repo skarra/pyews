@@ -173,6 +173,9 @@ class EmailAddresses(CField):
                 'MailBoxType' : None
                 }
 
+        def key (self):
+            return self.attrib['Key']
+
         def __str__ (self):
             return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.value)
 
@@ -230,6 +233,9 @@ class ImAddresses(CField):
                 'Key' : None,
                 }
 
+        def key (self):
+            return self.attrib['Key']
+
         def __str__ (self):
             return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.value)
 
@@ -286,6 +292,9 @@ class PhoneNumbers(CField):
             self.attrib = {
                 'Key' : None,               # ews.data.PhoneKey
                 }
+
+        def key (self):
+            return self.attrib['Key']
 
         def __str__ (self):
             return 'Key: %8s  Number: %s' % (self.attrib['Key'], self.value)
