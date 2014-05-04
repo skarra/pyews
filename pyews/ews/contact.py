@@ -222,6 +222,63 @@ class EmailAddresses(CField):
         s += '; '.join([str(x) for x in self.entries])
         return s
 
+class ImAddresses(CField):
+    class Im(CField):
+        def __init__ (self, text=None):
+            CField.__init__(self, 'Entry', text)
+            self.attrib = {
+                'Key' : None,
+                }
+
+        def __str__ (self):
+            return 'Key: %8s  Address: %s' % (self.attrib['Key'], self.value)
+
+    def __init__ (self, node=None):
+        CField.__init__(self, 'ImAddresses')
+        self.children = self.entries = []
+        if node is not None:
+            self.populate_from_node(node)
+
+    def populate_from_node (self, node):
+        for child in node:
+            im = self.Im()
+            for k, v in child.attrib.iteritems():
+                im.add_attrib(k, v)
+
+            im.value = child.text
+            self.entries.append(im)
+
+    def add (self, key, addr):
+        im = self.Im()
+        im.add_attrib('Key', key)
+        im.value = addr
+        self.entries.append(im)
+
+    def has_updates (self):
+        return len(self.entries) > 0
+
+    def write_to_xml_update (self):
+        ret = []
+        for im in self.entries:
+            s = ''
+            s += '\n<t:IndexedFieldURI FieldURI="contacts:ImAddress" '
+            s += 'FieldIndex="%s"/>' % im.attrib['Key']
+            s += '\n<t:Contact>'
+            s += '\n  <t:ImAddresses>'
+            s += '\n    <t:Entry Key="%s">%s</t:Entry>' % (im.attrib['Key'],
+                                                           escape(im.value))
+            s += '\n  </t:ImAddresses>'
+            s += '\n</t:Contact>'
+            ret.append(s)
+
+        t = '\n</t:SetItemField>\n<t:SetItemField>'
+        return t.join(ret)
+
+    def __str__ (self):
+        s = '%s Addresses: ' % len(self.entries)
+        s += '; '.join([str(x) for x in self.entries])
+        return s
+
 class PhoneNumbers(CField):
     class Phone(CField):
         def __init__ (self, text=None):
@@ -356,6 +413,7 @@ class Contact(Item):
 
         self.notes = Notes()
         self.emails = EmailAddresses()
+        self.ims    = ImAddresses()
         self.phones = PhoneNumbers()
         self.business_home_page = BusinessHomePage()
 
@@ -406,6 +464,8 @@ class Contact(Item):
                 self.notes.value = child.text
             elif tag == 'EmailAddresses':
                 self.emails.populate_from_node(child)
+            elif tag == 'ImAddresses':
+                self.ims.populate_from_node(child)
             elif tag == 'PhoneNumbers':
                 self.phones.populate_from_node(child)
             elif tag == 'BusinessHomePage':
@@ -502,7 +562,7 @@ class Contact(Item):
                          cn.middle_name, cn.nickname, self.company_name,
                          self.emails, self.phones, self.assistant_name,
                          self.birthday, self.business_home_page,
-                         self.department, self.job_title,
+                         self.department, self.ims, self.job_title,
                          self.manager, self.spouse_name, cn.surname,
                          self.anniversary, self.alias]
 
@@ -526,6 +586,7 @@ class Contact(Item):
         s += '\nGEnder: %s' % self.gender
         s += '\nPhones: %s' % self.phones
         s += '\nEmails: %s' % self.emails
+        s += '\nIms: %s' % self.ims
         s += '\nNotes: %s' % self.notes
         s += '\nJob title: %s' % self.job_title.value
 
