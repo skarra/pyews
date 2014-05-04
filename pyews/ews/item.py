@@ -298,7 +298,7 @@ class ExtendedProperty(Field):
         s += '\n<t:Contact>'
         s += '\n  <t:ExtendedProperty>'
         s += '\n      %s' % ef
-        s += '\n      <t:Value>%s</t:Value>' % escape(self.value)
+        s += '\n      <t:Value>%s</t:Value>' % escape(str(self.value))
         s += '\n  </t:ExtendedProperty>'
         s += '\n</t:Contact>'
 
