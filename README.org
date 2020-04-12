@@ -1,4 +1,4 @@
-*Status*: EWS is effectively deprecated, and BasicAuthentication (the only type that we support in EWS is actually being shut down for good soon-ish. As such this repo is now effectively frozen as of 2020-April. 
+*Status*: EWS is effectively deprecated, and BasicAuthentication (the only type that we support in EWS is actually being shut down for good soon-ish. As such this repo is now effectively frozen as of 2020-April. Reference: https://techcommunity.microsoft.com/t5/exchange-team-blog/upcoming-changes-to-exchange-web-services-ews-api-for-office-365/ba-p/608055 
 
 This is a pure python wrapper for use with Microsoft Exchange Web Services
 (EWS). For now it only understands contacts and contact folders.
